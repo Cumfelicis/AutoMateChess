@@ -8,6 +8,7 @@ import sys
 from utils import board_to_name
 from utils import name_to_board
 from Pieces import Bishop, Pawn, Queen, King, Knight, Rook, No, Piece
+from chess.Move import Move
 import arduino_communication
 from utils import pos_to_real_board as ptrb
 from utils.piece_to_storage import piece_to_storage
@@ -108,7 +109,7 @@ class Board:
     def move_piece_to_temporary_storage(self, piece_square: list[int], destination: list[int], castled: bool,
                                         castled_short: bool, eped: bool,
                                         storage: Piece) -> Piece:  # returns the piece that was captured, so it can
-        # get assigned to an temporary storage
+        # get assigned to a temporary storage
         if self.squares[destination[0]][
             destination[1]].name == "!" and not castled and not eped:  # case: no piece was captured
             self.squares[piece_square[0]][piece_square[1]] = self.squares[destination[0]][destination[1]]
@@ -231,20 +232,25 @@ class Board:
         self.turn = not self.turn
         self.played_moves += 1
         self.squares[destination[0]][destination[1]].first_moved = copy.deepcopy(self.played_moves)
+        move = Move(piece_square, destination, captured_storage, promotion, eped)
         self.last_move = [piece_square, destination, captured_storage, promotion, eped]
         self.moves.append([piece_square, destination, captured_storage, promotion, eped])
         return "legal move"
 
-    def update_last_move(self):
+    def update_last_move(self):  # sets the last move played
         if len(self.moves) > 0:
             self.last_move = self.moves[-1]
 
-    def redo_last_move(self, last_move, real=True):
+    def redo_last_move(self, last_move,
+                       real=True):  # redoes the last played move on the digital board and redoes the last move
+        # on the real board if real=True
         if len(self.moves) > 0:
             self.moves.pop()
         piece_square = last_move[0]
         destination = last_move[1]
-        if self.squares[destination[0]][destination[1]].first_moved == self.played_moves:
+        if self.squares[destination[0]][destination[1]].first_moved == self.played_moves:  # resets the moved value
+            # important for castling
+            # TODO: check if first_moved hat to be reset
             self.squares[destination[0]][destination[1]].moved = False
         captured = last_move[2]
         promotion = last_move[3]
@@ -298,7 +304,7 @@ class Board:
             self.last_move = None
         self.turn = not self.turn
 
-    def find_played_move(self, other_board):
+    def find_played_move(self, other_board):  # TODO: rewrite for hall detection
         for i in self.squares:
             for j in i:
                 if self.turn and j.direction == -1:
@@ -317,7 +323,7 @@ class Board:
                             self.redo_last_move(self.last_move, real=False)
         return False
 
-    def compare_boards(self, other_board):
+    def compare_boards(self, other_board):  # TODO: rewrite for detection
         for x, i in enumerate(self.squares):
             for y, j in enumerate(i):
                 if not ((j.name in self.white_pieces and other_board[x][y] == 1) or (j.name in self.black_pieces and
@@ -326,34 +332,35 @@ class Board:
                     return False
         return True
 
-    def highlight_last_move(self):
+    def highlight_last_move(self):  # TODO: ignore and write in App
         pass
 
     def draw_pieces(self):
         for row in self.squares:
             for i in row:
-                if i is not None:
-                    i.draw_piece()
+                i.draw_piece()
 
     def in_check(self):
-        in_check = False
+        def check() -> bool:
+            if piece.name == "K":
+                for move in self.get_legal_moves()[1]:
+                    if piece.pos == move[1] and self.turn:
+                        return True
+            elif piece.name == "k":
+                for move in self.get_legal_moves()[0]:
+                    if piece.pos == move[1] and not self.turn:
+                        return True
         for i in self.squares:
-            for j in i:
-                if j.name == "K":
-                    for k in self.get_legal_moves()[1]:
-                        if j.pos == k[1] and self.turn:
-                            in_check = True
-                elif j.name == "k":
-                    for k in self.get_legal_moves()[0]:
-                        if j.pos == k[1] and not self.turn:
-                            in_check = True
-        return in_check
+            for piece in i:
+                if check():
+                    return True
+        return False
 
-    def check_for_played_move(self):
+    def check_for_played_move(self):  # TODO: rewrite for hall detection
         self.find_played_move(self.piece_detector.check_for_pieces())
 
     def update_storage(self, piece):
-        if not piece is False and not piece.name == "!":
+        if piece is not False and not piece.name == "!":
             self.find_storage_pos(piece.name)
 
     def play_move_on_board(self, piece_square, target_square, captured=No(0, 0, 0, 0, 0, 0), castled=False,
@@ -427,12 +434,12 @@ class Board:
         self.stepper_y.move_to(ptrb.get_pos(square[0], False))
         self.stepper_y.run_to()
 
-    def clear_real_board(self):
+    def clear_real_board(self):  # TODO: rewrite
         for i in self.squares:
-            for j in i:
-                if not j.name == "!":
-                    self.move_to_square(j.pos)
-                    self.remove_piece(j.name)
+            for piece in i:
+                if not piece.name == "!":
+                    self.move_to_square(piece.pos)
+                    self.remove_piece(piece.name)
 
     def setup_real_board(self, old_pos, new_pos):
         leftovers = []
@@ -474,7 +481,7 @@ class Board:
             self.play_move_on_board(self.find_extraction_pos(i[0]), i[1])
 
     def find_storage_pos(self, piece):
-        try:
+        try:  # TODO: rewrite so there is no try/catch
             storage_pos = piece_to_storage(piece)
             if piece in self.white_pieces:
                 while not self.white_storage[storage_pos[0]][storage_pos[1]] == 0:
@@ -578,38 +585,36 @@ class Board:
                         black_moves.append([j.pos, k])
         return [white_moves, black_moves]
 
+    def create_piece(self, new_piece: str, piece: Piece) -> Piece:
+        if new_piece.upper() == "Q":
+            return Queen([piece.pos[0], piece.pos[1]], piece.pos[0] == 0, self.size,
+                                                             self.window,
+                                                             self.pos, False, self)
+        elif new_piece.upper() == "R":
+            return Rook([piece.pos[0], piece.pos[1]], piece.pos[0] == 0, self.size,
+                                                            self.window,
+                                                            self.pos, False, self)
+        elif new_piece.upper() == "N":
+            return Knight([piece.pos[0], piece.pos[1]], piece.pos[0] == 0,
+                                                              self.size, self.window,
+                                                              self.pos, False, self)
+        elif new_piece.upper() == "B":
+            return Bishop([piece.pos[0], piece.pos[1]], piece.pos[0] == 0,
+                                                              self.size, self.window,
+                                                              self.pos, False, self)
+        print("Invalid Input")
+        new_piece = input("piece to promote into: ")
+        return self.create_piece(new_piece, piece)
+
     def check_for_promotion(self):
-        new_piece = False
+        new_piece = No(0,0,0,0,0,0)
         for i in self.squares:
-            for j in i:
-                if j.name == "P" and j.pos[0] == 0:
+            for piece in i:
+                if piece.name.upper() == "P" and (piece.pos[0] == 0 or piece.pos[0] == 7):
                     new_piece = input("piece to promote into: ")
-                    if new_piece.upper() == "Q":
-                        self.squares[j.pos[0]][j.pos[1]] = Queen([j.pos[0], j.pos[1]], True, self.size, self.window,
-                                                                 self.pos, False, self)
-                    elif new_piece.upper() == "R":
-                        self.squares[j.pos[0]][j.pos[1]] = Rook([j.pos[0], j.pos[1]], True, self.size, self.window,
-                                                                self.pos, False, self)
-                    elif new_piece.upper() == "N":
-                        self.squares[j.pos[0]][j.pos[1]] = Knight([j.pos[0], j.pos[1]], True, self.size, self.window,
-                                                                  self.pos, False, self)
-                    elif new_piece.upper() == "B":
-                        self.squares[j.pos[0]][j.pos[1]] = Bishop([j.pos[0], j.pos[1]], True, self.size, self.window,
-                                                                  self.pos, False, self)
-                elif j.name == "P" and j.pos[0] == 7:
-                    new_piece = input("piece to promote into: ")
-                    if new_piece.upper() == "Q":
-                        self.squares[j.pos[0]][j.pos[1]] = Queen([j.pos[0], j.pos[1]], False, self.size, self.window,
-                                                                 self.pos, False, self)
-                    elif new_piece.upper() == "R":
-                        self.squares[j.pos[0]][j.pos[1]] = Rook([j.pos[0], j.pos[1]], False, self.size, self.window,
-                                                                self.pos, False, self)
-                    elif new_piece.upper() == "N":
-                        self.squares[j.pos[0]][j.pos[1]] = Knight([j.pos[0], j.pos[1]], False, self.size, self.window,
-                                                                  self.pos, False, self)
-                    elif new_piece.upper() == "B":
-                        self.squares[j.pos[0]][j.pos[1]] = Bishop([j.pos[0], j.pos[1]], False, self.size, self.window,
-                                                                  self.pos, False, self)
+                    new_piece = self.create_piece(new_piece, piece)
+                    self.squares[piece.pos[0]][piece.pos[1]] = new_piece
+
         return new_piece
 
     def check_for_mate(self):
