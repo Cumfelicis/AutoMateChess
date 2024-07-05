@@ -20,9 +20,9 @@ class Board:
         self.setup = setup  # the position the board is set up with
         self.real_board = real_board  # a bool to indicate weather this instance represents the real board
         self.alignment = alignment  # weather this board is seen from the white/black perspective
-        self.pos_x = pos_x  # TODO:no clue
+        self.pos_x = pos_x  # position the board is drawn on the screen
         self.pos_y = pos_y  # "
-        self.pos = (pos_x, pos_y)  # "
+        self.pos = (pos_x, pos_y)
         self.window = window  # the window instance of pycharm this is rendered in
         self.size = size  # the size this instance is rendered in
         self.between_squares = int(162 * 0.8)  # TODO: remove from this class
@@ -158,7 +158,7 @@ class Board:
                 destination[1]] = captured_storage
         self.squares[piece_square[0]][piece_square[1]] = storage
 
-    def move_piece(self, piece_square, destination, promotion=False, real=True):
+    def move_piece(self, piece_square, destination, promotion=False, real=True) -> bool:
         castled = False
         castled_short = False
         self.get_legal_moves()
@@ -169,7 +169,7 @@ class Board:
         elif self.check_for_long_castle(piece_square, destination):
             castled = True
         if not self.could_be_legal_move(piece_square, destination, castled):
-            return 'illegal move'
+            return False
         if self.was_ep(piece_square, destination):
             eped = True
         self.squares[piece_square[0]][piece_square[1]].move_piece_rpos(destination)
@@ -181,9 +181,9 @@ class Board:
         if illegal_move or self.anchor:
             self.redo_move(piece_square, destination, captured_storage, storage, eped)
             if illegal_move:
-                return "illegal move"
+                return False
             else:
-                return "legal move"
+                return True
         if self.squares[destination[0]][destination[1]].name.upper() == "P" and \
                 abs(destination[0] - piece_square[0]) == 2:
             self.ep = [self.squares[destination[0]][destination[1]].pos[0] -
@@ -235,7 +235,7 @@ class Board:
         move = Move(piece_square, destination, captured_storage, promotion, eped)
         self.last_move = [piece_square, destination, captured_storage, promotion, eped]
         self.moves.append([piece_square, destination, captured_storage, promotion, eped])
-        return "legal move"
+        return True
 
     def update_last_move(self):  # sets the last move played
         if len(self.moves) > 0:
@@ -309,14 +309,14 @@ class Board:
             for j in i:
                 if self.turn and j.direction == -1:
                     for k in j.get_possible_moves():
-                        if self.move_piece(j.pos, k, real=False) == "legal move":
+                        if self.move_piece(j.pos, k, real=False):
                             if self.compare_boards(other_board):
                                 self.update_storage(self.last_move[2])
                                 return True
                             self.redo_last_move(self.last_move, real=False)
                 elif not self.turn and j.direction == 1:
                     for k in j.get_possible_moves():
-                        if self.move_piece(j.pos, k, real=False) == "legal move":
+                        if self.move_piece(j.pos, k, real=False):
                             if self.compare_boards(other_board):
                                 self.update_storage(self.last_move[2])
                                 return True
@@ -350,6 +350,7 @@ class Board:
                 for move in self.get_legal_moves()[0]:
                     if piece.pos == move[1] and not self.turn:
                         return True
+
         for i in self.squares:
             for piece in i:
                 if check():
@@ -441,7 +442,7 @@ class Board:
                     self.move_to_square(piece.pos)
                     self.remove_piece(piece.name)
 
-    def setup_real_board(self, old_pos, new_pos):
+    def setup_real_board(self, old_pos, new_pos):  # this looks like shit
         leftovers = []
         missing = []
         for x, i in enumerate(old_pos):
@@ -588,26 +589,26 @@ class Board:
     def create_piece(self, new_piece: str, piece: Piece) -> Piece:
         if new_piece.upper() == "Q":
             return Queen([piece.pos[0], piece.pos[1]], piece.pos[0] == 0, self.size,
-                                                             self.window,
-                                                             self.pos, False, self)
+                         self.window,
+                         self.pos, False, self)
         elif new_piece.upper() == "R":
             return Rook([piece.pos[0], piece.pos[1]], piece.pos[0] == 0, self.size,
-                                                            self.window,
-                                                            self.pos, False, self)
+                        self.window,
+                        self.pos, False, self)
         elif new_piece.upper() == "N":
             return Knight([piece.pos[0], piece.pos[1]], piece.pos[0] == 0,
-                                                              self.size, self.window,
-                                                              self.pos, False, self)
+                          self.size, self.window,
+                          self.pos, False, self)
         elif new_piece.upper() == "B":
             return Bishop([piece.pos[0], piece.pos[1]], piece.pos[0] == 0,
-                                                              self.size, self.window,
-                                                              self.pos, False, self)
+                          self.size, self.window,
+                          self.pos, False, self)
         print("Invalid Input")
         new_piece = input("piece to promote into: ")
         return self.create_piece(new_piece, piece)
 
     def check_for_promotion(self):
-        new_piece = No(0,0,0,0,0,0)
+        new_piece = No(0, 0, 0, 0, 0, 0)
         for i in self.squares:
             for piece in i:
                 if piece.name.upper() == "P" and (piece.pos[0] == 0 or piece.pos[0] == 7):
@@ -618,21 +619,22 @@ class Board:
         return new_piece
 
     def check_for_mate(self):
-        mate = True
-        if not self.anchor:
-            self.anchor = True
-            if self.turn:
-                for i in self.get_legal_moves()[0]:
-                    if self.move_piece(i[0], i[1]) == "legal move":
-                        mate = False
-                        break
-            else:
-                for i in self.get_legal_moves()[1]:
-                    if self.move_piece(i[0], i[1]) == "legal move":
-                        mate = False
-                        break
-            self.anchor = False
-        return mate
+        if self.anchor:
+            return True
+        self.anchor = True
+        if self.turn:
+            for i in self.get_legal_moves()[0]:
+                if self.move_piece(i[0], i[1]):
+                    self.anchor = False
+                    return False
+
+        else:
+            for i in self.get_legal_moves()[1]:
+                if self.move_piece(i[0], i[1]):
+                    self.anchor = False
+                    return False
+        self.anchor = False
+        return True
 
     def print_board(self):
         for j in self.squares:
@@ -648,7 +650,7 @@ class Board:
         alignment = self.alignment
         size = self.size
 
-        squares = [Square(pos_x, pos_y, (192, 192, 192), (204, 0, 0), None, size) for i in range(64)]
+        squares = [Square(pos_x, pos_y, (192, 192, 192), (204, 0, 0), None, size) for _ in range(64)]
         add_line = 0
         add_row = 0
         where_in_line = 1
@@ -825,8 +827,7 @@ class Mouse:
         pos_y = (self.mouse.get_pos()[1] - self.board.pos[1]) / self.board.size
         if 0 < pos_x <= 8 and 0 < pos_y <= 8:
             return [math.ceil(pos_y) - 1, math.ceil(pos_x) - 1]
-        else:
-            return False
+        return False
 
     def drag(self):
         if self.mouse.get_pressed()[0] and not self.pressed:
@@ -876,6 +877,8 @@ class Game:
                     sys.exit()
             self.draw_board()
             self.move_pieces()
+            if self.board.check_for_mate():
+                print('mate')
             pygame.display.update()
 
     @staticmethod

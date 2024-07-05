@@ -1,7 +1,7 @@
 import time
 
 
-class StopSwitch:
+class AnalogReader:
     def __init__(self, pin, board):
         self.pin = board.get_pin(f"a:{pin}:i")
         self.pin.enable_reporting()
@@ -10,6 +10,16 @@ class StopSwitch:
     def get_state(self):
         print(self.pin.read())
         return self.pin.read()
+
+
+class HallSensor:
+    def __init__(self, pin, board):
+        super().__init__(pin, board)
+
+
+class StopSwitch(AnalogReader):
+    def __init__(self, pin, board):
+        super().__init__(pin, board)
 
 
 class Led:
