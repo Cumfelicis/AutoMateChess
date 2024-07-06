@@ -12,7 +12,7 @@ class AnalogReader:
         return self.pin.read()
 
 
-class HallSensor:
+class HallSensor(AnalogReader):
     def __init__(self, pin, board):
         super().__init__(pin, board)
 
@@ -102,9 +102,9 @@ class Stepper:
     def set_dir(self, dir):
         self.dir_pin.write(dir)
 
-    def single_step(self, axis, dir):
+    def single_step(self, axis, direction):
         if axis:
-            if dir:
+            if direction:
                 self.dir_pin.write(self.dir_true)
                 if self.second_dir_pin is not False:
                     self.second_dir_pin.write(abs(1 - self.last_single_step))
@@ -113,7 +113,7 @@ class Stepper:
                 if self.second_dir_pin is not False:
                     self.second_dir_pin.write(abs(1 - self.last_single_step))
         else:
-            if dir:
+            if direction:
                 self.dir_pin.write(abs(1 - self.last_single_step))
                 if self.second_dir_pin is not False:
                     self.second_dir_pin.write(self.dir_false)
@@ -126,8 +126,8 @@ class Stepper:
         #  time.sleep(0.0005)
         self.step_pin.write(0)
 
-    def step(self, dir):
-        if dir:
+    def step(self, direction):
+        if direction:
             self.dir_pin.write(self.dir_true)
             if self.second_dir_pin is not False:
                 self.second_dir_pin.write(self.dir_false)
@@ -139,10 +139,10 @@ class Stepper:
         self.step_pin.write(1)
         #  time.sleep(0.0005)
         self.step_pin.write(0)
-        self.update_pos(dir)
+        self.update_pos(direction)
 
-    def update_pos(self, dir):
-        if dir:
+    def update_pos(self, direction):
+        if direction:
             self.pos += 1
         else:
             self.pos -= 1

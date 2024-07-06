@@ -2,7 +2,7 @@ import numpy
 import numpy as np
 import mediapipe as mp
 import cv2
-"""
+
 mp_hand = mp.solutions.hands
 
 
@@ -54,8 +54,7 @@ class PieceDetector:
             return board
         except numpy.AxisError:
             return [[0 for _ in range(8)] for _ in range(8)]
-            
-            """
+
 
 
 

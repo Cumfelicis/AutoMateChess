@@ -1,4 +1,4 @@
-from piece_detector import Camera
+from visual_detection_fossils.piece_detector import Camera
 from piece_to_colour import piece_to_colour
 
 camera = Camera()
