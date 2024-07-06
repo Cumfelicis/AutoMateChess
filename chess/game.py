@@ -8,7 +8,6 @@ import sys
 from utils import board_to_name
 from utils import name_to_board
 from Pieces import Bishop, Pawn, Queen, King, Knight, Rook, No, Piece
-from chess.Move import Move
 import arduino_communication
 from utils import pos_to_real_board as ptrb
 from utils.piece_to_storage import piece_to_storage
@@ -158,7 +157,7 @@ class Board:
                 destination[1]] = captured_storage
         self.squares[piece_square[0]][piece_square[1]] = storage
 
-    def move_piece(self, piece_square, destination, promotion=False, real=True) -> bool:
+    def move_piece(self, piece_square, destination, promotion=False, real=True) -> bool:  #method to move a piece on the
         castled = False
         castled_short = False
         self.get_legal_moves()
@@ -232,7 +231,6 @@ class Board:
         self.turn = not self.turn
         self.played_moves += 1
         self.squares[destination[0]][destination[1]].first_moved = copy.deepcopy(self.played_moves)
-        move = Move(piece_square, destination, captured_storage, promotion, eped)
         self.last_move = [piece_square, destination, captured_storage, promotion, eped]
         self.moves.append([piece_square, destination, captured_storage, promotion, eped])
         return True
