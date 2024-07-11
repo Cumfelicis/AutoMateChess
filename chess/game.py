@@ -6,15 +6,18 @@ import math
 import pygame.display
 import sys
 from utils import board_to_name
+from config import config
 from utils import name_to_board
-from Pieces import Bishop, Pawn, Queen, King, Knight, Rook, No, Piece
+from simulation.piece import SimBishop as Bishop, SimPawn as Pawn, SimQueen as Queen, SimKing as King, \
+    SimKnight as Knight, SimRook as Rook, SimNo as No, SimPiece as Piece
+from simulation.simulation import Simulation
 import arduino_communication
 from utils import pos_to_real_board as ptrb
 from utils.piece_to_storage import piece_to_storage
 
 
 class Board:
-    def __init__(self, setup, alignment, pos_x, pos_y, window, size, stepper_x=False, stepper_y=False, magnet=False,
+    def __init__(self, setup, alignment, pos_x, pos_y, window, stepper_x=False, stepper_y=False, magnet=False,
                  real_board=False):
         self.setup = setup  # the position the board is set up with
         self.real_board = real_board  # a bool to indicate weather this instance represents the real board
@@ -23,15 +26,15 @@ class Board:
         self.pos_y = pos_y  # "
         self.pos = (pos_x, pos_y)
         self.window = window  # the window instance of pycharm this is rendered in
-        self.size = size  # the size this instance is rendered in
-        self.between_squares = int(162 * 0.8)  # TODO: remove from this class
+        self.size = config['BOARD_SQUARE_SIZE']  # the size every square of this instance is rendered in
+        self.between_squares = int(config['BOARD_SQUARE_SIZE'] / 2)  # TODO: remove from this class
         if self.real_board:  # TODO: make required, real ones or simulated
             self.stepper_x = stepper_x
             self.stepper_y = stepper_y
             self.magnet = magnet
         self.white_pieces = ["K", "Q", "R", "B", "N", "P"]  # a list of Piece names/Id's to check which color a piece is
         self.black_pieces = ["k", "q", "r", "b", "n", "p"]
-        self.squares = [[No(0, 0, 0, 0, 0, 0) for _ in range(8)] for _ in range(8)]
+        self.squares = [[No(0, 0, 0, self.window, 0, 0) for _ in range(8)] for _ in range(8)]
         # the squares of the board
         self.white_castle_short = False  # variables to decide weather castles is legal
         self.white_castle_long = False
@@ -118,46 +121,48 @@ class Board:
             captured_storage = self.squares[destination[0]][destination[1]]
             self.squares[destination[0]][destination[1]].captured = True
             self.squares[destination[0]][destination[1]] = self.squares[piece_square[0]][piece_square[1]]
-            self.squares[piece_square[0]][piece_square[1]] = No(0, 0, 0, 0, 0, 0)
+            self.squares[piece_square[0]][piece_square[1]] = No(0, 0, 0, self.window, 0, 0)
+            return captured_storage
         elif castled_short:  # case: castled short
-            self.squares[destination[0]][destination[1] + 1].move_piece_rpos([piece_square[0], piece_square[1] + 1])
+            self.squares[destination[0]][destination[1] + 1].move_piece_pos([piece_square[0], piece_square[1] + 1])
             self.squares[destination[0]][destination[1]] = self.squares[piece_square[0]][piece_square[1]]
-            self.squares[piece_square[0]][piece_square[1]] = No(0, 0, 0, 0, 0, 0)
+            self.squares[piece_square[0]][piece_square[1]] = No(0, 0, 0, self.window, 0, 0)
             self.squares[piece_square[0]][piece_square[1] + 1] = self.squares[destination[0]][destination[1] + 1]
-            self.squares[destination[0]][destination[1] + 1] = No(0, 0, 0, 0, 0, 0)
-            return No(0, 0, 0, 0, 0, 0)
+            self.squares[destination[0]][destination[1] + 1] = No(0, 0, 0, self.window, 0, 0)
+            return No(0, 0, 0, self.window, 0, 0)
         elif eped:  # case:ep
-            self.squares[piece_square[0]][piece_square[1]].move_piece_rpos(destination)
+            self.squares[piece_square[0]][piece_square[1]].move_piece_pos(destination)
             self.squares[destination[0]][destination[1]] = self.squares[piece_square[0]][piece_square[1]]
-            self.squares[piece_square[0]][piece_square[1]] = No(0, 0, 0, 0, 0, 0)
+            self.squares[piece_square[0]][piece_square[1]] = No(0, 0, 0, self.window, 0, 0)
             captured_storage \
                 = self.squares[destination[0] - self.squares[destination[0]][destination[1]].direction] \
                 [destination[1]]
             captured_storage.captured = True
             self.squares[destination[0] - self.squares[destination[0]][destination[1]].direction][destination[1]] \
-                = No(0, 0, 0, 0, 0, 0)
+                = No(0, 0, 0, self.window, 0, 0)
             return captured_storage
         else:  # case: castled long
-            self.squares[destination[0]][destination[1] - 2].move_piece_rpos([piece_square[0], piece_square[1] - 1])
+            self.squares[destination[0]][destination[1] - 2].move_piece_pos([piece_square[0], piece_square[1] - 1])
             self.squares[destination[0]][destination[1]] = self.squares[piece_square[0]][piece_square[1]]
-            self.squares[piece_square[0]][piece_square[1]] = No(0, 0, 0, 0, 0, 0)
+            self.squares[piece_square[0]][piece_square[1]] = No(0, 0, 0, self.window, 0, 0)
             self.squares[piece_square[0]][piece_square[1] - 1] = self.squares[destination[0]][destination[1] - 2]
-            self.squares[destination[0]][destination[1] - 2] = No(0, 0, 0, 0, 0, 0)
-            return No(0, 0, 0, 0, 0, 0)
+            self.squares[destination[0]][destination[1] - 2] = No(0, 0, 0, self.window, 0, 0)
+            return No(0, 0, 0, self.window, 0, 0)
 
     def redo_move(self, piece_square: list[int], destination: list[int], captured_storage: Piece, storage: Piece,
                   eped: bool) -> None:
-        self.squares[destination[0]][destination[1]].move_piece_rpos(piece_square)
+        self.squares[destination[0]][destination[1]].move_piece_pos(piece_square)
         self.squares[destination[0]][destination[1]] = captured_storage
         self.squares[destination[0]][destination[1]].captured = False
         if eped:
             captured_storage.captured = False
-            self.squares[destination[0]][destination[1]].move_piece_rpos(piece_square)
+            self.squares[destination[0]][destination[1]].move_piece_pos(piece_square)
             self.squares[destination[0] - self.squares[destination[0]][destination[1]].direction][
                 destination[1]] = captured_storage
         self.squares[piece_square[0]][piece_square[1]] = storage
 
-    def move_piece(self, piece_square, destination, promotion=False, real=True) -> bool:  #method to move a piece on the
+    def move_piece(self, piece_square, destination, promotion=False,
+                   real=True) -> bool:  # method to move a piece on the
         castled = False
         castled_short = False
         self.get_legal_moves()
@@ -171,7 +176,7 @@ class Board:
             return False
         if self.was_ep(piece_square, destination):
             eped = True
-        self.squares[piece_square[0]][piece_square[1]].move_piece_rpos(destination)
+        self.squares[piece_square[0]][piece_square[1]].move_piece_pos(destination)
         storage = self.squares[piece_square[0]][piece_square[1]]
         captured_storage = self.move_piece_to_temporary_storage(piece_square, destination, castled, castled_short,
                                                                 eped, storage)
@@ -224,7 +229,8 @@ class Board:
                     self.squares[destination[0]][destination[1]] = Knight([destination[0], destination[1]],
                                                                           True, self.size, self.window,
                                                                           self.pos, False, self)
-        promotion = self.check_for_promotion()
+        if promotion:
+            promotion = self.check_for_promotion()
         self.squares[destination[0]][destination[1]].moved = True
         if self.real_board and real:
             self.play_move_on_board(piece_square, destination, captured_storage, castled)
@@ -261,13 +267,13 @@ class Board:
                 self.squares[destination[0]][destination[1] + 1] = copy.copy(
                     self.squares[destination[0]][destination[1] - 1])
                 self.squares[destination[0]][destination[1] - 1] = captured
-                self.squares[destination[0]][destination[1] + 1].move_piece_rpos([destination[0], destination[1] + 1])
+                self.squares[destination[0]][destination[1] + 1].move_piece_pos([destination[0], destination[1] + 1])
                 self.squares[destination[0]][destination[1] + 1].moved = False
             else:
                 self.squares[destination[0]][destination[1] - 2] = copy.copy(
                     self.squares[destination[0]][destination[1] + 1])
                 self.squares[destination[0]][destination[1] + 1] = captured
-                self.squares[destination[0]][destination[1] - 2].move_piece_rpos([destination[0], destination[1] - 2])
+                self.squares[destination[0]][destination[1] - 2].move_piece_pos([destination[0], destination[1] - 2])
                 self.squares[destination[0]][destination[1] - 2].moved = False
 
         if ep:
@@ -276,22 +282,22 @@ class Board:
             self.squares[destination[0] - self.squares[destination[0]][destination[1]].direction][
                 destination[1]] = captured
             captured.captured = False
-            self.squares[piece_square[0]][piece_square[1]].move_piece_rpos(piece_square)
+            self.squares[piece_square[0]][piece_square[1]].move_piece_pos(piece_square)
         else:
             self.ep = [-1, -1]
             self.squares[piece_square[0]][piece_square[1]] = self.squares[destination[0]][destination[1]]
             self.squares[destination[0]][destination[1]] = captured
             captured.captured = False
-            self.squares[piece_square[0]][piece_square[1]].move_piece_rpos(piece_square)
+            self.squares[piece_square[0]][piece_square[1]].move_piece_pos(piece_square)
         if promotion is not False:
             if self.squares[piece_square[0]][piece_square[1]].direction == -1:
-                self.squares[piece_square[0]][piece_square[1]].direction = Pawn([piece_square[0], piece_square[1]],
-                                                                                True, self.size,
-                                                                                self.window, self.pos, False, self)
+                self.squares[piece_square[0]][piece_square[1]] = Pawn([piece_square[0], piece_square[1]],
+                                                                      True, self.size,
+                                                                      self.window, self.pos, False, self)
             else:
-                self.squares[piece_square[0]][piece_square[1]].direction = Pawn([piece_square[0], piece_square[1]],
-                                                                                True, self.size,
-                                                                                self.window, self.pos, False, self)
+                self.squares[piece_square[0]][piece_square[1]] = Pawn([piece_square[0], piece_square[1]],
+                                                                      False, self.size,
+                                                                      self.window, self.pos, False, self)
         if self.real_board and real:
             self.redo_move_on_board(piece_square=piece_square, target_square=destination, captured=captured,
                                     castled=castled)
@@ -324,19 +330,58 @@ class Board:
     def compare_boards(self, other_board):  # TODO: rewrite for detection
         for x, i in enumerate(self.squares):
             for y, j in enumerate(i):
-                if not ((j.name in self.white_pieces and other_board[x][y] == 1) or (j.name in self.black_pieces and
-                                                                                     other_board[x][y] == 2) or
-                        (j.name == "!" and other_board[x][y] == 0)):
+                if not j.name == other_board[x][y]:
                     return False
         return True
 
     def highlight_last_move(self):  # TODO: ignore and write in App
         pass
 
+    def board_to_string(self):
+        board = [['!' for _ in range(8)] for _ in range(8)]
+        for x, i in enumerate(self.squares):
+            for y, j in enumerate(i):
+                board[x][y] = j.name
+        return board
+
     def draw_pieces(self):
         for row in self.squares:
             for i in row:
                 i.draw_piece()
+
+    def draw_storage(self, alignment, pos):
+        pos_x = pos[0]
+        pos_y = pos[1]
+        alignment = alignment
+        size = self.size
+
+        squares = [Square(pos_x, pos_y, (192, 192, 192), (204, 0, 0), None, size) for _ in range(16)]
+        add_line = 0
+        add_row = 0
+        where_in_line = 1
+        if alignment:
+            condition = 2
+        else:
+            condition = 8
+            alignment = True
+
+        for square in squares:
+            if where_in_line > condition:
+                add_row += size
+                add_line = 0
+                where_in_line = 1
+                alignment = not alignment
+            if alignment:
+                colour = square.colour_1
+            else:
+                colour = square.colour_2
+            square.pos_x += add_line
+            square.pos_y += add_row
+            square.draw_square(self.window, colour)
+
+            alignment = not alignment
+            add_line += size
+            where_in_line += 1
 
     def in_check(self):
         def check() -> bool:
@@ -606,7 +651,7 @@ class Board:
         return self.create_piece(new_piece, piece)
 
     def check_for_promotion(self):
-        new_piece = No(0, 0, 0, 0, 0, 0)
+        new_piece = No(0, 0, 0, self.window, 0, 0)
         for i in self.squares:
             for piece in i:
                 if piece.name.upper() == "P" and (piece.pos[0] == 0 or piece.pos[0] == 7):
@@ -640,7 +685,6 @@ class Board:
             for i in j:
                 row.append(i.name)
             print(f"{row}")
-        print("printed board")
 
     def draw_board(self):
         pos_x = self.pos_x
@@ -677,7 +721,7 @@ class Board:
     def set_up(self, fen, first_set_up=False):
         if self.real_board and not first_set_up:
             temp = self.squares.copy()
-        self.squares = [[No(0, 0, 0, 0, 0, 0) for _ in range(8)] for _ in range(8)]
+        self.squares = [[No(0, 0, 0, self.window, 0, 0) for _ in range(8)] for _ in range(8)]
         row = 0
         column = 0
         blanks = 0
@@ -855,15 +899,21 @@ class Game:
     def __init__(self, window=pygame.display.set_mode((1536, 810), pygame.RESIZABLE), stepper_x=False, stepper_y=False,
                  magnet=False, real_game=False):
         self.window = window
-        self.board = Board(None, True, 250, 75, self.window, 80, stepper_x=stepper_x, stepper_y=stepper_y,
-                           magnet=magnet,
-                           real_board=real_game)
         self.real = real_game
+        self.clock = py.time.Clock()
+        board_pos = config['STEPPER_STARTING_POS']
+        self.sim_board = Board(None, True, board_pos[0], board_pos[1], self.window, real_board=False)
+        self.simulation = Simulation(self.window, self.sim_board, Mouse(self.sim_board), self.clock)
+        self.board = Board(None, True, board_pos[0], board_pos[1], self.window, stepper_x=self.simulation.stepper_x,
+                           stepper_y=self.simulation.stepper_y,
+                           magnet=self.simulation.magnet,
+                           real_board=real_game)
+
         self.mouse = Mouse(self.board)
 
     def game_loop(self):
         pygame.display.set_caption("Chess")
-        clock = py.time.Clock()
+        clock = self.clock
         run = True
         self.setup_board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
         while run:
@@ -873,8 +923,8 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-            self.draw_board()
-            self.move_pieces()
+            self.simulation.draw()
+            self.simulation.move_pieces()
             if self.board.check_for_mate():
                 print('mate')
             pygame.display.update()
@@ -885,6 +935,7 @@ class Game:
 
     def setup_board(self, setup, first_setup=False):
         self.board.set_up(setup, first_set_up=first_setup)
+        self.sim_board.set_up(setup, False)
 
     def draw_board(self):
         self.board.draw_outline()

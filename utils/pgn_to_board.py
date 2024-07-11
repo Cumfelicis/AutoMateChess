@@ -1,9 +1,9 @@
-import game as g
-import board_to_name as btn
+from chess import game as g
+from utils import board_to_name as btn
 
 
 def pgn_to_game(pgn="pgn.txt"):
-    game = g.Game()
+    game = g.Game(real_game=False)
     game.setup_board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     time_control_found = False
     time_control = []
@@ -65,7 +65,7 @@ def pgn_to_game(pgn="pgn.txt"):
                                 if k.name == "P":
                                     if btn.board_to_name(i[-3:-1]) in k.get_possible_moves() and \
                                             k.pos[1] == btn.file_to_name(i[0]):
-                                        if game.get_board().move_piece(k.pos, btn.board_to_name(i[-3:-1]), i[-1].lower) == "legal move":
+                                        if game.get_board().move_piece(k.pos, btn.board_to_name(i[-3:-1]), i[-1].lower):
                                             game.get_board().redo_last_move(game.get_board().last_move)
                                             moves[x][0] = [k.pos, btn.board_to_name(i[-3:-1]), i[-1].lower]
                                             game.get_board().move_piece(k.pos, btn.board_to_name(i[-3:-1]), i[-1].lower)
@@ -75,7 +75,7 @@ def pgn_to_game(pgn="pgn.txt"):
                                     if btn.board_to_name(i[-3:-1]) in k.get_possible_moves() and \
                                             k.pos[1] == btn.file_to_name(i[0]):
                                         if game.get_board().move_piece(k.pos, btn.board_to_name(i[-3:-1]),
-                                                                       i[-1].lower) == "legal move":
+                                                                       i[-1].lower):
                                             game.get_board().redo_last_move(game.get_board().last_move)
                                             moves[x][0] = [k.pos, btn.board_to_name(i[-3:-1]), i[-1].lower]
                                             game.get_board().move_piece(k.pos, btn.board_to_name(i[-3:-1]), i[-1].lower)
@@ -87,19 +87,19 @@ def pgn_to_game(pgn="pgn.txt"):
                     for j in game.board.squares:
                         for k in j:
                             if game.get_players_move():
-                                    if btn.board_to_name(i[-2:]) in k.get_possible_moves() and \
-                                            k.pos[1] == btn.file_to_name(i[0]):
-                                        if game.get_board().move_piece(k.pos, btn.board_to_name(i[-2:])) == "legal move":
-                                            game.get_board().redo_last_move(game.get_board().last_move)
-                                            moves[x][0] = [k.pos, btn.board_to_name(i[-2:]), False]
-                                            game.get_board().move_piece(k.pos, btn.board_to_name(i[-2:]))
-                                            break
+                                if btn.board_to_name(i[-2:]) in k.get_possible_moves() and \
+                                        k.pos[1] == btn.file_to_name(i[0]):
+                                    if game.get_board().move_piece(k.pos, btn.board_to_name(i[-2:])):
+                                        game.get_board().redo_last_move(game.get_board().last_move)
+                                        moves[x][0] = [k.pos, btn.board_to_name(i[-2:]), False]
+                                        game.get_board().move_piece(k.pos, btn.board_to_name(i[-2:]))
+                                        break
 
                             else:
                                 if k.name == "p":
                                     if btn.board_to_name(i[-2:]) in k.get_possible_moves() and \
                                             k.pos[1] == btn.file_to_name(i[0]):
-                                        if game.get_board().move_piece(k.pos, btn.board_to_name(i[-2:]),) == "legal move":
+                                        if game.get_board().move_piece(k.pos, btn.board_to_name(i[-2:])):
                                             game.get_board().redo_last_move(game.get_board().last_move)
                                             moves[x][0] = [k.pos, btn.board_to_name(i[-2:]), False]
                                             game.get_board().move_piece(k.pos, btn.board_to_name(i[-2:]))
@@ -127,14 +127,14 @@ def pgn_to_game(pgn="pgn.txt"):
                         for k in j:
                             if game.get_players_move():
                                 if k.name == i[0] and btn.file_to_name(i[1]) == k.pos[1]:
-                                    if game.board.move_piece(k.pos, btn.board_to_name(i[-2:])) == "legal move":
+                                    if game.board.move_piece(k.pos, btn.board_to_name(i[-2:])):
                                         game.redo_last_move()
                                         moves[x][0] = [k.pos, btn.board_to_name(i[-2:]), False]
                                         game.board.move_piece(k.pos, btn.board_to_name(i[-2:]))
                                         break
                             else:
                                 if k.name == i[0].lower() and btn.file_to_name(i[1]) == k.pos[1]:
-                                    if game.board.move_piece(k.pos, btn.board_to_name(i[-2:])) == "legal move":
+                                    if game.board.move_piece(k.pos, btn.board_to_name(i[-2:])):
                                         game.redo_last_move()
                                         moves[x][0] = [k.pos, btn.board_to_name(i[-2:]), False]
                                         game.board.move_piece(k.pos, btn.board_to_name(i[-2:]))
@@ -147,14 +147,14 @@ def pgn_to_game(pgn="pgn.txt"):
                         for k in j:
                             if game.get_players_move():
                                 if k.name == i[0] and abs(k.pos[0] - 8) == i[1]:
-                                    if game.board.move_piece(k.pos, btn.board_to_name(i[-2:])) == "legal move":
+                                    if game.board.move_piece(k.pos, btn.board_to_name(i[-2:])):
                                         game.redo_last_move()
                                         moves[x][0] = [k.pos, btn.board_to_name(i[-2:]), False]
                                         game.board.move_piece(k.pos, btn.board_to_name(i[-2:]))
                                         break
                             else:
                                 if k.name == i[0].lower() and k.pos[0] + 1 == i[1]:
-                                    if game.board.move_piece(k.pos, btn.board_to_name(i[-2:])) == "legal move":
+                                    if game.board.move_piece(k.pos, btn.board_to_name(i[-2:])):
                                         game.redo_last_move()
                                         moves[x][0] = [k.pos, btn.board_to_name(i[-2:]), False]
                                         game.board.move_piece(k.pos, btn.board_to_name(i[-2:]))
@@ -167,14 +167,14 @@ def pgn_to_game(pgn="pgn.txt"):
                         for k in j:
                             if game.get_players_move():
                                 if k.name == i[0]:
-                                    if game.board.move_piece(k.pos, btn.board_to_name(i[-2:])) == "legal move":
+                                    if game.board.move_piece(k.pos, btn.board_to_name(i[-2:])):
                                         game.redo_last_move()
-                                        moves[x][0] = [k.pos,btn.board_to_name(i[-2:]), False]
+                                        moves[x][0] = [k.pos, btn.board_to_name(i[-2:]), False]
                                         game.board.move_piece(k.pos, btn.board_to_name(i[-2:]))
                                         break
                             else:
                                 if k.name == i[0].lower():
-                                    if game.board.move_piece(k.pos, btn.board_to_name(i[-2:])) == "legal move":
+                                    if game.board.move_piece(k.pos, btn.board_to_name(i[-2:])):
                                         game.redo_last_move()
                                         moves[x][0] = [k.pos, btn.board_to_name(i[-2:]), False]
                                         game.board.move_piece(k.pos, btn.board_to_name(i[-2:]))

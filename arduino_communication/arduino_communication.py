@@ -50,7 +50,7 @@ class Magnet:
 
 
 class Stepper:
-    def __init__(self, dir_pin, step_pin, dir, board, reference_pin, board_2, second_dir_pin=False, alternative_reference_pin=False):
+    def __init__(self, dir_pin, step_pin, axis, board, reference_pin, board_2, second_dir_pin=False, alternative_reference_pin=False):
         print(6)
         self.dir_pin = board.get_pin(f"d:{dir_pin}:o")
         print(6.1)
@@ -71,7 +71,7 @@ class Stepper:
             print(8)
         self.pos = 0
         self.target_pos = 0
-        if dir:
+        if axis:
             self.dir_true = 0
             self.dir_false = 1
         else:
@@ -99,8 +99,8 @@ class Stepper:
                 self.step(False)
         self.pos = 0
 
-    def set_dir(self, dir):
-        self.dir_pin.write(dir)
+    def change_dir(self, direction):
+        self.dir_pin.write(direction)
 
     def single_step(self, axis, direction):
         if axis:

@@ -1,17 +1,20 @@
-import game as g
-import board_to_name
+import chess.game as g
+from utils.board_to_name import board_to_name
 from stockfish import Stockfish
 import pygame as py
 import pygame.display
 import sys
-import Button
+from utils.Button import Button
 import arduino_communication
 import pyfirmata
 import time
 
 pygame.display.init()
+
 stockfish = Stockfish(
     path="C:/Users/flixg/PycharmProjects/stockfish_15.1_win_x64_avx2/stockfish-windows-2022-x86-64-avx2.exe")
+
+'''
 board_1 = pyfirmata.Arduino("COM5")
 board_2 = pyfirmata.Arduino("COM3")
 
@@ -22,6 +25,7 @@ it.start()
 magnet = arduino_communication.Magnet(12, board_1, board_2)
 magnet.off()
 time.sleep(1)
+'''
 
 
 
@@ -37,7 +41,7 @@ class Play:
             self.colour = False
         self.game = g.Game(self.window, stepper_x=stepper_x, stepper_y=stepper_y, magnet=magnet,  real_game=real)
         print("test")
-        self.button = Button.Button(200, 1000, 100, 100, self.window, "exit")
+        self.button = Button(200, 1000, 100, 100, self.window, "exit")
 
         self.loop()
 
@@ -47,14 +51,16 @@ class Play:
         self.game.setup_board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", first_setup=True)
         run = True
         while run:
-            clock.tick(60)
+            clock.tick(30)
             self.window.fill((176, 196, 222))
             for event in py.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-            self.game.draw_board()
-            self.game.move_pieces()
+            self.game.simulation.draw()
+            self.game.simulation.move_pieces()
+            self.game.simulation.board.print_board()
+            self.game.board.find_played_move(self.game.simulation.board.board_to_string())
             self.button.draw_button()
             if self.button.is_pressed():
                 run = False
@@ -90,12 +96,13 @@ class Play:
         if move[-1].isalpha():
             second_move = second_move[:-1]
             if self.colour:
-                return [board_to_name.board_to_name(first_move), board_to_name.board_to_name(second_move),
+                return [board_to_name(first_move), board_to_name(second_move),
                         move[-1].lower]
             else:
-                return [board_to_name.board_to_name(first_move), board_to_name.board_to_name(second_move),
+                return [board_to_name(first_move), board_to_name(second_move),
                         move[-1].upper()]
 
-        return [board_to_name.board_to_name(first_move), board_to_name.board_to_name(second_move)]
+        return [board_to_name(first_move), board_to_name(second_move)]
 
-play = Play(stepper_x=stepper_x, stepper_y=stepper_y, magnet=magnet, real=True)
+
+play = Play(real=True)

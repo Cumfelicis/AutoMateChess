@@ -1,2 +1,6 @@
-if __name__ == "__main__":
-    print("test")
+a = 5
+b = a
+
+a = 6
+
+print(a, b)

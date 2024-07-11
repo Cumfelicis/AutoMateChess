@@ -1,5 +1,8 @@
+from config import config
+
+
 def get_pos(index, axis):
     if axis:
-        return int((index + 0.5) * 312 * 0.8)
+        return int((index + 0.5) * config['BOARD_SQUARE_SIZE'])
     else:
-        return int((index + 2.5) * 312 * 0.8)
+        return int((index + 0.5) * config['BOARD_SQUARE_SIZE'])

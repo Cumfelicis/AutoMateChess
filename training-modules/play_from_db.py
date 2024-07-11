@@ -1,14 +1,14 @@
-import game as g
-import pgn_to_board
+from chess import game as g
+from utils import pgn_to_board
 import pygame as py
 import pygame.display
 import sys
-import Button
+from utils import Button
 import time
 import arduino_communication
 import pyfirmata, pyfirmata.util
 
-
+'''
 board_1 = pyfirmata.Arduino("COM5")
 board_2 = pyfirmata.Arduino("COM3")
 
@@ -19,8 +19,7 @@ it.start()
 magnet = arduino_communication.Magnet(12, board_1, board_2)
 magnet.off()
 time.sleep(1)
-
-
+'''
 pygame.display.init()
 
 
@@ -30,6 +29,7 @@ class Play:
         self.game = g.Game(self.window, stepper_x=stepper_x, stepper_y=stepper_y, magnet=magnet, real_game=real_game)
         self.button = Button.Button(200, 1000, 100, 100, self.window, "exit")
         self.moves = pgn_to_board.pgn_to_game()
+        print(self.moves)
 
         self.loop()
 
@@ -45,15 +45,15 @@ class Play:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-            self.game.draw_board()
+            self.game.simulation.draw()
             self.button.draw_button()
             keys = py.key.get_pressed()
             if keys[py.K_LEFT]:
                 if i > 1:
                     i -= 1
                     self.game.redo_last_move()
-                    self.game.draw_board()
-                    self.game.move_pieces()
+                    self.game.simulation.draw()
+                    self.game.simulation.move_pieces()
                     self.button.draw_button()
                     time.sleep(0.2)
             elif keys[py.K_RIGHT]:
@@ -62,8 +62,8 @@ class Play:
 
                     print(self.game.get_players_move())
                     print(self.game.play_move(self.moves[0][i][0][0], self.moves[0][i][0][1], self.moves[0][i][0][2]))
-                    self.game.draw_board()
-                    self.game.move_pieces()
+                    self.game.simulation.draw()
+                    self.game.simulation.move_pieces()
                     self.button.draw_button()
                     i += 1
                     time.sleep(0.2)
@@ -77,4 +77,4 @@ class Play:
             pygame.display.update()
 
 
-play = Play(stepper_x=stepper_x, stepper_y=stepper_y, magnet=magnet, real_game=True)
+play = Play(real_game=True)
