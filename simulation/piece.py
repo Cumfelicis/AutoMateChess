@@ -1,56 +1,49 @@
+from chess.pieces import Piece
+from config import config
+
+from copy import copy
+
 import pygame as py
 
 py.font.init()
 my_font = py.font.SysFont('Comic Sans MS', 30)
 
 
-class Piece:
-    def __init__(self, pos, colour, size, window, board_pos, name, captured, board):
-        self.moved = True
-        self.pos = pos
-        self.board_pos = board_pos
-        self.size = size
-        self.name = name.lower()
-        self.blit_colour = (0, 0, 0)
-        self.board = board
-        self.first_moved = False
-        self.white_pieces = ["K", "Q", "B", "N", "R", "P"]
-        self.black_pieces = ["k", "q", "b", "n", "r", "p"]
-        if colour:
-            self.colour = (255, 255, 255)
-            self.blit_colour = (255, 255, 255)
-            self.direction = -1
-            self.name = self.name.upper()
-            self.pieces = self.white_pieces
-            self.not_pieces = self.black_pieces
-        else:
-            self.colour = (0, 0, 0)
-            self.direction = 1
-            self.pieces = self.black_pieces
-            self.not_pieces = self.white_pieces
-        self.captured = captured
-        self.window = window
+class SimPiece(Piece):
+    def __init__(self, pos, color, size, window, board_pos, name, board, captured):
+        super().__init__(pos, color, size, window, board_pos, name, board, captured)
+        self.attached = False
+        self.blit_pos = self.get_pos()
 
-    def move_piece_rpos(self, new_pos):
-        self.pos = new_pos
+    def attach(self, magnet):
+        self.attached = True
+        self.blit_pos = magnet.pos
 
-    def get_pos(self):
-        x = self.board_pos[0] + self.size * (self.pos[1] + 0.25)
-        y = self.board_pos[1] + self.size * (self.pos[0] + 0.25)
-        return [x, y]
+    def detach(self, magnet):
+        self.attached = False
+        self.blit_pos = (
+            config['STEPPER_STARTING_POS'][0] + self.blit_pos[0] - 0.25 * config['BOARD_SQUARE_SIZE'],
+            config['STEPPER_STARTING_POS'][1] + self.blit_pos[1] - 0.25 * config['BOARD_SQUARE_SIZE'])
 
     def draw_piece(self):
-        if not self.captured:
+        if not self.captured and self.attached:
             text_surface = my_font.render(self.name, False, self.blit_colour)
-            self.window.blit(text_surface, self.get_pos())
+            self.window.blit(text_surface, (
+                config['STEPPER_STARTING_POS'][0] + self.blit_pos[0] - 0.25 * config['BOARD_SQUARE_SIZE'],
+                config['STEPPER_STARTING_POS'][1] + self.blit_pos[1] - 0.25 * config['BOARD_SQUARE_SIZE']))
+        elif not self.captured:
+            text_surface = my_font.render(self.name, False, self.blit_colour)
+            self.window.blit(text_surface, self.blit_pos)
 
-    def get_possible_moves(self):
-        return []
+    def get_coordinates(self, pos):
+        x = round((pos[1] - self.board_pos[1] + 1) / self.size - 0.25)
+        y = round((pos[0] - self.board_pos[0] + 1) / self.size - 0.25)
+        return [x, y]
 
 
-class Pawn(Piece):
+class SimPawn(SimPiece):
     def __init__(self, pos, colour, size, window, board_pos, captured, board):
-        super(Pawn, self).__init__(pos, colour, size, window, board_pos, "p", captured, board)
+        super(SimPawn, self).__init__(pos, colour, size, window, board_pos, "p", captured, board)
 
     def get_possible_moves(self):
         moves = []
@@ -94,9 +87,9 @@ class Pawn(Piece):
         return moves
 
 
-class King(Piece):
+class SimKing(SimPiece):
     def __init__(self, pos, colour, size, window, board_pos, captured, board):
-        super(King, self).__init__(pos, colour, size, window, board_pos, "k", captured, board)
+        super(SimKing, self).__init__(pos, colour, size, window, board_pos, "k", captured, board)
         self.moved = False
 
     def get_possible_moves(self):
@@ -192,9 +185,9 @@ class King(Piece):
         return moves
 
 
-class Queen(Piece):
+class SimQueen(SimPiece):
     def __init__(self, pos, colour, size, window, board_pos, captured, board):
-        super(Queen, self).__init__(pos, colour, size, window, board_pos, "q", captured, board)
+        super(SimQueen, self).__init__(pos, colour, size, window, board_pos, "q", captured, board)
 
     def get_possible_moves(self):
         moves = []
@@ -277,9 +270,9 @@ class Queen(Piece):
         return moves
 
 
-class Bishop(Piece):
+class SimBishop(SimPiece):
     def __init__(self, pos, colour, size, window, board_pos, captured, board):
-        super(Bishop, self).__init__(pos, colour, size, window, board_pos, "b", captured, board)
+        super(SimBishop, self).__init__(pos, colour, size, window, board_pos, "b", captured, board)
 
     def get_possible_moves(self):
         moves = []
@@ -328,9 +321,9 @@ class Bishop(Piece):
         return moves
 
 
-class Knight(Piece):
+class SimKnight(SimPiece):
     def __init__(self, pos, colour, size, window, board_pos, captured, board):
-        super(Knight, self).__init__(pos, colour, size, window, board_pos, "n", captured, board)
+        super(SimKnight, self).__init__(pos, colour, size, window, board_pos, "n", captured, board)
 
     def get_possible_moves(self):
         moves = []
@@ -370,9 +363,9 @@ class Knight(Piece):
         return moves
 
 
-class Rook(Piece):
+class SimRook(SimPiece):
     def __init__(self, pos, colour, size, window, board_pos, captured, board):
-        super(Rook, self).__init__(pos, colour, size, window, board_pos, "r", captured, board)
+        super(SimRook, self).__init__(pos, colour, size, window, board_pos, "r", captured, board)
         self.moved = False
 
     def get_possible_moves(self):
@@ -416,7 +409,13 @@ class Rook(Piece):
         return moves
 
 
-class No(Piece):
+class SimNo(SimPiece):
     def __init__(self, pos, colour, size, window, board_pos, board):
-        super(No, self).__init__(pos, colour, size, window, board_pos, "!", True, board)
+        super(SimNo, self).__init__(pos, colour, size, window, board_pos, "!", True, board)
         self.pos = [0, 0]
+
+    def draw_piece(self):
+        pass
+
+    def get_pos(self):
+        pass
