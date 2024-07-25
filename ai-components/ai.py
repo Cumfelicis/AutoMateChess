@@ -21,15 +21,19 @@ PIECE_MAPPING = {"!": 0,
                  "B": 9,
                  "R": 10,
                  "Q": 11,
-                 "K": 12} # Values of the Pieces
+                 "K": 12}  # Values of the Pieces
 
 
 # Board representation CNN
 def build_cnn_model():
     model = models.Sequential()
-    model.add(layers.Conv2D(64, (3, 3), activation='relu', input_shape=(8, 8, 13)))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu', input_shape=(8, 8, 1), padding='same'))
     model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(64, (2, 2), activation='relu'))
+    model.add(layers.MaxPooling2D((1, 1)))
+    model.add(layers.Conv2D(64, (2, 2), activation='relu'))
     model.add(layers.Flatten())
+    #model.add(layers.Dense())
     return model
 
 
@@ -57,27 +61,27 @@ def build_output_layer():
 
 # create the models
 cnn_model = build_cnn_model()
-rnn_model = build_rnn_model()
+#  rnn_model = build_rnn_model()
 decision_model = build_decision_model()
 output_model = build_output_layer()
 
 # Define input layers for each model
-cnn_input = layers.Input(shape=(8, 8, 13))  # 13-channel input representing the chessboard
-rnn_input = layers.Input(shape=(None, FEATURE_SIZE))  # Variable-length input for sequential information
+cnn_input = layers.Input(shape=(8, 8, 1))  # 64-channel input representing the chessboard
+#  rnn_input = layers.Input(shape=(None, FEATURE_SIZE))  # Variable-length input for sequential information
 decision_input = layers.Input(shape=(DECISION_INPUT_SIZE,))  # other factors influencing the decision
 
 
 # Connect the models
 cnn_output = cnn_model(cnn_input)
-rnn_output = rnn_model(rnn_input)
+#  rnn_output = rnn_model(rnn_input)
 
 
 # Concatenate the outputs
-merged_output = layers.concatenate([cnn_output, rnn_output, decision_input])
+merged_output = layers.concatenate([cnn_output, decision_input])
 final_output = layers.Dense(1, activation='linear')(merged_output)  # Regression task
 
 # Compile the final model
-model = models.Model(inputs=[cnn_input, rnn_input, decision_input], outputs=final_output)
+model = models.Model(inputs=[cnn_input, decision_input], outputs=final_output)
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 
@@ -106,12 +110,19 @@ def encode_decision_input(info):
 
 
 # extract Training Data
-cnn_input_data = [np.zeros((8, 8), dtype=np.int32)]
-rnn_input_data = []
-decision_input_data = []
-output_data = []
+cnn_input_data = np.zeros((8, 8, 1),  dtype=np.int32)
+cnn_input_data = np.array(cnn_input_data, ndmin=4)
+#  rnn_input_data = []
+decision_input_data = np.array([1, 2, 3])
+output_data = np.array(1)
+decision_input_data = decision_input_data.reshape(1, -1)
+#cnn_input_data = cnn_input_data.reshape(1, -1)
+output_data = output_data.reshape(1, -1)
+print(cnn_input_data.shape)
+print(decision_input_data.shape)
+
 
 print(model.summary())
 # Train the model
-model.fit([cnn_input_data, rnn_input_data, decision_input_data], output_data, epochs=NUM_EPOCHS,
-          batch_size=BATCH_SIZE, use_multiprocessing=True, validation_split=0.01)
+model.fit(x=[cnn_input_data, decision_input_data], y=output_data, epochs=NUM_EPOCHS,
+          batch_size=BATCH_SIZE, use_multiprocessing=True)

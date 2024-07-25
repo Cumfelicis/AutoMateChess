@@ -55,10 +55,14 @@ class Pawn(Piece):
         super(Pawn, self).__init__(pos, colour, size, window, board_pos, "p", captured, board)
 
     def get_possible_moves(self):
+        if (self.direction == -1 and self.pos[0] == 0) or (self.direction == 1 and self.pos[0] == 7):
+            return []
+
         moves = []
         if self.direction == -1:
             if self.pos[0] == 6:
-                if self.board.squares[self.pos[0] + 2 * self.direction][self.pos[1]].name.lower() == "!":
+                if self.board.squares[self.pos[0] + 2 * self.direction][self.pos[1]].name.lower() == "!" and \
+                        self.board.squares[self.pos[0] + self.direction][self.pos[1]].name.lower() == "!":
                     moves.append([self.pos[0] + 2 * self.direction, self.pos[1]])  # double step
 
             if self.board.squares[self.pos[0] + self.direction][self.pos[1]].name.lower() == "!":
@@ -77,7 +81,8 @@ class Pawn(Piece):
                         [self.pos[0] + self.direction, self.pos[1] - self.direction])  # capture right
         else:
             if self.pos[0] == 1:
-                if self.board.squares[self.pos[0] + 2 * self.direction][self.pos[1]].name.lower() == "!":
+                if self.board.squares[self.pos[0] + 2 * self.direction][self.pos[1]].name.lower() == "!" and \
+                        self.board.squares[self.pos[0] + self.direction][self.pos[1]].name.lower() == "!":
                     moves.append([self.pos[0] + 2 * self.direction, self.pos[1]])  # double step
             if self.board.squares[self.pos[0] + self.direction][self.pos[1]].name.lower() == "!":
                 moves.append([self.pos[0] + self.direction, self.pos[1]])  # single step
@@ -425,5 +430,3 @@ class No(Piece):
 
     def draw_piece(self):
         pass
-
-

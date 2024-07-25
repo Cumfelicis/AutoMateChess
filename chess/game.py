@@ -58,6 +58,7 @@ class Board:
 
     def check_for_short_castle(self, piece_square: list[int], destination: list[int]) -> bool:  # checks if the move
         # was a legal short_castling move
+        self.get_legal_moves()
         return (self.squares[piece_square[0]][piece_square[1]].name.upper() == "K"
                 and piece_square[1] - destination[1] == -2
                 and self.white_castle_short and
@@ -176,8 +177,8 @@ class Board:
             return False
         if self.was_ep(piece_square, destination):
             eped = True
-        self.squares[piece_square[0]][piece_square[1]].move_piece_pos(destination)
         storage = self.squares[piece_square[0]][piece_square[1]]
+        self.squares[piece_square[0]][piece_square[1]].move_piece_pos(destination)
         captured_storage = self.move_piece_to_temporary_storage(piece_square, destination, castled, castled_short,
                                                                 eped, storage)
         illegal_move = self.in_check()  # needs to be checked inside here, since this method is also used during
@@ -198,38 +199,46 @@ class Board:
         if promotion is not False:
             match promotion:
                 case "q":
-                    self.squares[destination[0]][destination[1]] = Queen([destination[0], destination[1]],
-                                                                         False, self.size, self.window,
-                                                                         self.pos, False, self)
+                    promotion = Queen([destination[0], destination[1]],
+                                      False, self.size, self.window,
+                                      self.pos, False, self)
+                    self.squares[destination[0]][destination[1]] = promotion
                 case "r":
-                    self.squares[destination[0]][destination[1]] = Rook([destination[0], destination[1]],
-                                                                        False, self.size, self.window,
-                                                                        self.pos, False, self)
+                    promotion = Rook([destination[0], destination[1]],
+                                     False, self.size, self.window,
+                                     self.pos, False, self)
+                    self.squares[destination[0]][destination[1]] = promotion
                 case "b":
-                    self.squares[destination[0]][destination[1]] = Bishop([destination[0], destination[1]],
-                                                                          False, self.size, self.window,
-                                                                          self.pos, False, self)
+                    promotion = Rook([destination[0], destination[1]],
+                                     False, self.size, self.window,
+                                     self.pos, False, self)
+                    self.squares[destination[0]][destination[1]] = promotion
                 case "n":
-                    self.squares[destination[0]][destination[1]] = Knight([destination[0], destination[1]],
-                                                                          False, self.size, self.window,
-                                                                          self.pos, False, self)
+                    promotion = Knight([destination[0], destination[1]],
+                                       False, self.size, self.window,
+                                       self.pos, False, self)
+                    self.squares[destination[0]][destination[1]] = promotion
                 case "Q":
-                    self.squares[destination[0]][destination[1]] = Queen([destination[0], destination[1]],
-                                                                         True, self.size, self.window,
-                                                                         self.pos, False, self)
+                    promotion = Queen([destination[0], destination[1]],
+                                      True, self.size, self.window,
+                                      self.pos, False, self)
+                    self.squares[destination[0]][destination[1]] = promotion
                 case "R":
-                    self.squares[destination[0]][destination[1]] = Rook([destination[0], destination[1]],
-                                                                        True, self.size, self.window,
-                                                                        self.pos, False, self)
+                    promotion = Rook([destination[0], destination[1]],
+                                     True, self.size, self.window,
+                                     self.pos, False, self)
+                    self.squares[destination[0]][destination[1]] = promotion
                 case "B":
-                    self.squares[destination[0]][destination[1]] = Bishop([destination[0], destination[1]],
-                                                                          True, self.size, self.window,
-                                                                          self.pos, False, self)
+                    promotion = Bishop([destination[0], destination[1]],
+                                       True, self.size, self.window,
+                                       self.pos, False, self)
+                    self.squares[destination[0]][destination[1]] = promotion
                 case "N":
-                    self.squares[destination[0]][destination[1]] = Knight([destination[0], destination[1]],
-                                                                          True, self.size, self.window,
-                                                                          self.pos, False, self)
-        if promotion:
+                    promotion = Knight([destination[0], destination[1]],
+                                       True, self.size, self.window,
+                                       self.pos, False, self)
+                    self.squares[destination[0]][destination[1]] = promotion
+        if promotion is True:
             promotion = self.check_for_promotion()
         self.squares[destination[0]][destination[1]].moved = True
         if self.real_board and real:
@@ -291,11 +300,11 @@ class Board:
             self.squares[piece_square[0]][piece_square[1]].move_piece_pos(piece_square)
         if promotion is not False:
             if self.squares[piece_square[0]][piece_square[1]].direction == -1:
-                self.squares[piece_square[0]][piece_square[1]] = Pawn([piece_square[0], piece_square[1]],
+                self.squares[piece_square[0]][piece_square[1]] = Pawn(piece_square,
                                                                       True, self.size,
                                                                       self.window, self.pos, False, self)
             else:
-                self.squares[piece_square[0]][piece_square[1]] = Pawn([piece_square[0], piece_square[1]],
+                self.squares[piece_square[0]][piece_square[1]] = Pawn(piece_square,
                                                                       False, self.size,
                                                                       self.window, self.pos, False, self)
         if self.real_board and real:
