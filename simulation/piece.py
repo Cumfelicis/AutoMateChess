@@ -46,10 +46,14 @@ class SimPawn(SimPiece):
         super(SimPawn, self).__init__(pos, colour, size, window, board_pos, "p", captured, board)
 
     def get_possible_moves(self):
+        if (self.direction == -1 and self.pos[0] == 0) or (self.direction == 1 and self.pos[0] == 7):
+            return []
+
         moves = []
         if self.direction == -1:
             if self.pos[0] == 6:
-                if self.board.squares[self.pos[0] + 2 * self.direction][self.pos[1]].name.lower() == "!":
+                if self.board.squares[self.pos[0] + 2 * self.direction][self.pos[1]].name.lower() == "!" and \
+                        self.board.squares[self.pos[0] + self.direction][self.pos[1]].name.lower() == "!":
                     moves.append([self.pos[0] + 2 * self.direction, self.pos[1]])  # double step
 
             if self.board.squares[self.pos[0] + self.direction][self.pos[1]].name.lower() == "!":
@@ -68,7 +72,8 @@ class SimPawn(SimPiece):
                         [self.pos[0] + self.direction, self.pos[1] - self.direction])  # capture right
         else:
             if self.pos[0] == 1:
-                if self.board.squares[self.pos[0] + 2 * self.direction][self.pos[1]].name.lower() == "!":
+                if self.board.squares[self.pos[0] + 2 * self.direction][self.pos[1]].name.lower() == "!" and \
+                        self.board.squares[self.pos[0] + self.direction][self.pos[1]].name.lower() == "!":
                     moves.append([self.pos[0] + 2 * self.direction, self.pos[1]])  # double step
             if self.board.squares[self.pos[0] + self.direction][self.pos[1]].name.lower() == "!":
                 moves.append([self.pos[0] + self.direction, self.pos[1]])  # single step
@@ -126,62 +131,78 @@ class SimKing(SimPiece):
         if not (self.pos[1] + 1 > 7):
             if self.board.squares[self.pos[0]][self.pos[1] + 1].name not in self.pieces:
                 moves.append([self.pos[0], self.pos[1] + 1])
-        # short castle white
-        if self.direction == -1 and not self.moved and self.pos[1] + 3 < 8:
-            if self.moved or self.board.squares[self.pos[0]][self.pos[1] + 3].moved:
-                self.board.white_castle_short_generally = False
+        if self.direction == -1:
+            # short castle white
+            if not self.moved and self.pos[1] + 3 < 8:
+                if self.moved or self.board.squares[self.pos[0]][self.pos[1] + 3].moved:
+                    self.board.white_castle_short_generally = False
+                else:
+                    self.board.white_castle_short_generally = True
+                if not (not self.board.squares[self.pos[0]][self.pos[1] + 3].moved and
+                        (self.board.squares[self.pos[0]][self.pos[1] + 2].name == "!" and
+                         self.board.squares[self.pos[0]][self.pos[1] + 1].name == "!")):
+                    self.board.white_castle_short = False
+                else:
+                    self.board.white_castle_short = True
+                if self.board.white_castle_short:
+                    moves.append([self.pos[0], self.pos[1] + 2])
             else:
-                self.board.white_castle_short_generally = True
-            if not (not self.board.squares[self.pos[0]][self.pos[1] + 3].moved and
-                    (self.board.squares[self.pos[0]][self.pos[1] + 2].name == "!" and
-                     self.board.squares[self.pos[0]][self.pos[1] + 1].name == "!")):
-                self.board.white_castle_short = False
-            else:
-                self.board.white_castle_short = True
-            if self.board.white_castle_short:
-                moves.append([self.pos[0], self.pos[1] + 2])
-        # long castle white
-        if self.direction == -1 and not self.moved and self.pos[1] - 4 >= 0:
-            if self.moved or self.board.squares[self.pos[0]][self.pos[1] - 4].moved:
-                self.board.white_castle_long_generally = False
-            else:
-                self.board.white_castle_long_generally = True
-            if not (not self.board.squares[self.pos[0]][self.pos[1] - 4].moved and
-                    (self.board.squares[self.pos[0]][self.pos[1] - 2].name == "!" and
-                     self.board.squares[self.pos[0]][self.pos[1] - 1].name == "!")):
                 self.board.white_castle_long = False
+                self.board.white_castle_short_generally = False
+            # long castle white
+            if not self.moved and self.pos[1] - 4 >= 0:
+                if self.moved or self.board.squares[self.pos[0]][self.pos[1] - 4].moved:
+                    self.board.white_castle_long_generally = False
+                else:
+                    self.board.white_castle_long_generally = True
+                if not (not self.board.squares[self.pos[0]][self.pos[1] - 4].moved and
+                        (self.board.squares[self.pos[0]][self.pos[1] - 2].name == "!" and
+                         self.board.squares[self.pos[0]][self.pos[1] - 1].name == "!" and self.board.squares[self.pos[0]][
+                             self.pos[1] - 3].name == "!")):
+                    self.board.white_castle_long = False
+                else:
+                    self.board.white_castle_long = True
+                if self.board.white_castle_long:
+                    moves.append([self.pos[0], self.pos[1] - 2])
             else:
-                self.board.white_castle_long = True
-            if self.board.white_castle_long:
-                moves.append([self.pos[0], self.pos[1] - 2])
-        # short castle black
-        if self.direction == 1 and not self.moved and self.pos[1] + 3 < 8:
-            if self.moved or self.board.squares[self.pos[0]][self.pos[1] + 3].moved:
+                self.board.white_castle_long = False
+                self.board.white_castle_long_generally = False
+        if self.direction == 1:
+            # short castle black
+            if not self.moved and self.pos[1] + 3 < 8:
+                if self.moved or self.board.squares[self.pos[0]][self.pos[1] + 3].moved:
+                    self.board.black_castle_short_generally = False
+                else:
+                    self.board.black_castle_short_generally = True
+                if not (not self.board.squares[self.pos[0]][self.pos[1] + 3].moved and
+                        (self.board.squares[self.pos[0]][self.pos[1] + 2].name == "!" and
+                         self.board.squares[self.pos[0]][self.pos[1] + 1].name == "!")):
+                    self.board.black_castle_short = False
+                else:
+                    self.board.black_castle_short = True
+                if self.board.black_castle_short:
+                    moves.append([self.pos[0], self.pos[1] + 2])
+            else:
+                self.board.black_castle_long = False
                 self.board.black_castle_short_generally = False
+            # long castle black
+            if not self.moved and self.pos[1] - 4 >= 0:
+                if self.moved or self.board.squares[self.pos[0]][self.pos[1] - 4].moved:
+                    self.board.black_castle_long_generally = False
+                else:
+                    self.board.black_castle_long_generally = True
+                if not (not self.board.squares[self.pos[0]][self.pos[1] - 4].moved and
+                        (self.board.squares[self.pos[0]][self.pos[1] - 2].name == "!" and
+                         self.board.squares[self.pos[0]][self.pos[1] - 1].name == "!" and self.board.squares[self.pos[0]][
+                             self.pos[1] - 3].name == "!")):
+                    self.board.black_castle_long_castle_long = False
+                else:
+                    self.board.black_castle_long = True
+                if self.board.black_castle_long:
+                    moves.append([self.pos[0], self.pos[1] - 2])
             else:
-                self.board.black_castle_short_generally = True
-            if not (not self.board.squares[self.pos[0]][self.pos[1] + 3].moved and
-                    (self.board.squares[self.pos[0]][self.pos[1] + 2].name == "!" and
-                     self.board.squares[self.pos[0]][self.pos[1] + 1].name == "!")):
-                self.board.black_castle_short = False
-            else:
-                self.board.black_castle_short = True
-            if self.board.black_castle_short:
-                moves.append([self.pos[0], self.pos[1] + 2])
-        # long castle black
-        if self.direction == 1 and not self.moved and self.pos[1] - 4 >= 0:
-            if self.moved or self.board.squares[self.pos[0]][self.pos[1] - 4].moved:
+                self.board.black_castle_long = False
                 self.board.black_castle_long_generally = False
-            else:
-                self.board.black_castle_long_generally = True
-            if not (not self.board.squares[self.pos[0]][self.pos[1] - 4].moved and
-                    (self.board.squares[self.pos[0]][self.pos[1] - 2].name == "!" and
-                     self.board.squares[self.pos[0]][self.pos[1] - 1].name == "!")):
-                self.board.black_castle_long_castle_long = False
-            else:
-                self.board.black_castle_long = True
-            if self.board.black_castle_long:
-                moves.append([self.pos[0], self.pos[1] - 2])
         return moves
 
 
@@ -413,6 +434,7 @@ class SimNo(SimPiece):
     def __init__(self, pos, colour, size, window, board_pos, board):
         super(SimNo, self).__init__(pos, colour, size, window, board_pos, "!", True, board)
         self.pos = [0, 0]
+        self.moved = False
 
     def draw_piece(self):
         pass
