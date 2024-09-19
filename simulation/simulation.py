@@ -25,7 +25,6 @@ class Simulation:
 
     def move_pieces(self):
         drag_old, drag_new = self.mouse.drag()
-        print(drag_old, drag_new)
         if self.mouse.pressed:
             if self.first_drag:
                 self.dragging = self.board.squares[self.mouse.mouse_pos_to_square()[0]][

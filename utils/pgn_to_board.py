@@ -187,7 +187,7 @@ def pgn_to_game(pgn="pgn.txt"):
         return moves, time_control
 
 
-def game_from_lines(lines, game):
+def game_from_lines(lines, game, own_games=False):
     game = game
     game.setup_board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     time_control_found = False
@@ -199,6 +199,7 @@ def game_from_lines(lines, game):
     move = []
     moves = []
     times = []
+    remaining_times = []
     positions = []
     time_found = False
     first_move_found = False
@@ -227,8 +228,10 @@ def game_from_lines(lines, game):
                 continue
             if time_control_found:
                 if j == '"-"]':
-                    return [], [], [], []
+                    return [], [], [], [], []
                 time, inkrement = map(lambda e: int(e.strip('"')), j[:-1].split('+'))
+                remaining_times.append(time)
+                remaining_times.append(time)
                 time_control.append(time)
                 time_control.append(inkrement)
                 last_clock_white = time_control[0]
@@ -260,12 +263,24 @@ def game_from_lines(lines, game):
                     times.append(abs(last_clock_white - time_in_seconds))
                     last_clock_white = time_in_seconds + inkrement
                     first_move_found = False
+                    remaining_times.append(last_clock_white)
                 else:
                     times.append(abs(last_clock_black - time_in_seconds))
                     last_clock_black = time_in_seconds + inkrement
                     second_move_found = False
+                    remaining_times.append(last_clock_black)
                 time_found = False
+
+    if own_games:
+        temp = []
+        for j in lines[-1].split(' '):
+            if j[-1] == '.':
+                pass
+            else:
+                temp.append(j)
+        moves = temp
     for x, i in enumerate(moves):
+        print(moves)
         i = i[0].replace('?', '').replace('!', '').replace('+', '').replace('x', '').replace('#', '')
         if not i[0].isupper() and not i[0].isnumeric():
             if i[-1].isalpha():  # promotion
@@ -419,7 +434,7 @@ def game_from_lines(lines, game):
                     break
         if not isinstance(moves[x][0], list):
             raise Exception('illegal move in PGN')
-    return time_control, positions, times, [white_elo, black_elo]
+    return time_control, positions, times, [white_elo, black_elo], remaining_times[:-2]
 
 
 def time_to_seconds(time_str):
@@ -428,7 +443,6 @@ def time_to_seconds(time_str):
 
     # Calculate the total number of seconds
     total_seconds = h * 3600 + m * 60 + s
-    print
 
     return total_seconds
 

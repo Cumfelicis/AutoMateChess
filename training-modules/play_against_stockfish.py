@@ -8,6 +8,8 @@ from utils.Button import Button
 import arduino_communication
 import pyfirmata
 import time
+import numpy as np
+from ai_components.ai import load_model, predict
 
 pygame.display.init()
 
@@ -28,18 +30,19 @@ time.sleep(1)
 '''
 
 
-
 class Play:
     def __init__(self, stepper_x=False, stepper_y=False, magnet=False, real=False):
         self.window = pygame.display.set_mode((1536, 810), pygame.RESIZABLE)
         self.strength = 50  # input("input stockfish strength: ")
         self.colour = "white"  # input("input colour: ")
         stockfish.set_skill_level(int(self.strength))
+        self.model = load_model("D:/models/architecture234.json", "D:/models/weights234.h5")
+        self.time_remaining = 600
         if self.colour == "white":
             self.colour = True
         else:
             self.colour = False
-        self.game = g.Game(self.window, stepper_x=stepper_x, stepper_y=stepper_y, magnet=magnet,  real_game=real)
+        self.game = g.Game(self.window, stepper_x=stepper_x, stepper_y=stepper_y, magnet=magnet, real_game=real)
         print("test")
         self.button = Button(200, 1000, 100, 100, self.window, "exit")
 
@@ -59,7 +62,6 @@ class Play:
                     sys.exit()
             self.game.simulation.draw()
             self.game.simulation.move_pieces()
-            self.game.simulation.board.print_board()
             self.game.board.find_played_move(self.game.simulation.board.board_to_string())
             self.button.draw_button()
             if self.button.is_pressed():
@@ -69,6 +71,7 @@ class Play:
                 run = False
                 self.game.reset_board()
             self.stockfish_play_move()
+            print
 
             pygame.display.update()
 
@@ -76,7 +79,12 @@ class Play:
         if not self.game.is_my_move(self.colour):
             stockfish.set_fen_position(self.game.get_fen())
             best_move = stockfish.get_best_move()
-            print(best_move)
+            delay = predict(self.game.board.board_to_string(),
+                            np.array([600, 0, 2000, self.time_remaining], dtype=np.float32), self.model)
+            delay = int(delay[0][0])
+            print(delay)
+            self.time_remaining -= delay
+            time.sleep(delay)
             self.game.play_move(self.move_to_board(best_move)[0],
                                 self.move_to_board(best_move)[1])
 
