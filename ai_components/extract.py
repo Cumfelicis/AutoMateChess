@@ -1,15 +1,14 @@
 import subprocess
 import numpy as np
 import csv
-from pgn_to_board import game_from_lines
+from utils.pgn_to_board import game_from_lines
 from chess.game import Game
 import zstandard as zstd
-
 
 counter = 0
 sets = 0
 pos_written = 0
-header = ['time_control', 'position', 'time_spent', 'elo']
+header = ['time_control', 'position', 'time_spent', 'elo', 'remaining_times']
 csv_file = None
 game_object = Game(real_game=False)
 
@@ -29,12 +28,17 @@ def encode_chessboard(board):
     return encoded_board
 
 
-def manage_csv_writing(zst_file_path, max_positions_per_file=100000):
+def manage_csv_writing(file_path, max_positions_per_file=10000):
     global counter, sets, pos_written, csv_file
+    time_control = []
+    positions = []
+    times = []
+    elo = []
+    remaining_times = []
 
     game_info_found = False
 
-    with zstd.open(zst_file_path, 'r') as file:
+    with open(file_path, 'r') as file:
         game = []
         for line in file:
             if line == "\n" and not game_info_found:
@@ -42,20 +46,23 @@ def manage_csv_writing(zst_file_path, max_positions_per_file=100000):
                 continue
             if line == "\n" and game_info_found:
                 try:
-                    time_control, positions, times, elo = game_from_lines(game, game_object)
-                except Exception:
-                    print('BUG!!!!!!!')
+                    print(game)
+                    time_control, positions, times, elo, remaining_times = game_from_lines(game, game_object, True)
+                except Exception as e:
+                    print('BUG!!!!!!!', e)
                     print(game)
                 turn = True
-                for position, time in zip(positions, times):
+                for position, time, remaining_time in zip(positions, times, remaining_times):
+                    print('test2')
                     if pos_written >= max_positions_per_file or pos_written == 0:
                         print(sets)
                         if csv_file is not None:
                             csv_file.close()
 
                         # Open a new CSV file
-                        csv_file_path = f'D:/csv/{sets}.csv'
+                        csv_file_path = f'D:/BLAC3/csv/{sets}.csv'
                         csv_file = open(csv_file_path, mode='w', newline='')
+                        print('test')
                         writer = csv.writer(csv_file)
 
                         # Write the header
@@ -66,9 +73,11 @@ def manage_csv_writing(zst_file_path, max_positions_per_file=100000):
 
                     # Write the row to the CSV file
                     if turn:
-                        writer.writerow([time_control, encode_chessboard(position).tolist(), time, elo[0]])
+                        writer.writerow([time_control, encode_chessboard(position).tolist(), time, elo[0],
+                                        remaining_time])
                     else:
-                        writer.writerow([time_control, encode_chessboard(position).tolist(), time, elo[1]])
+                        writer.writerow([time_control, encode_chessboard(position).tolist(), time, elo[1],
+                                        remaining_time])
                     turn = not turn
                     pos_written += 1
 
@@ -80,13 +89,13 @@ def manage_csv_writing(zst_file_path, max_positions_per_file=100000):
             # Append the current line to the game list
             game.append(line)
 
-        # Close the last file if open
+        # Close the last file if openpipe_extract.py
         if csv_file is not None:
             csv_file.close()
 
 
 # Path to the .zst file
-zst_file_path = 'D:/lichess_db_standard_rated_2023-04.pgn.zst'
-
-# Process and write the games to CSV
-manage_csv_writing(zst_file_path)
+zst_file_path = 'D:/BLAC3/games.txt'
+if __name__ == '__main__':
+    # Process and write the games to CSV
+    manage_csv_writing(zst_file_path)
