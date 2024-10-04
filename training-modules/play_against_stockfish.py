@@ -36,7 +36,9 @@ class Play:
         self.strength = 50  # input("input stockfish strength: ")
         self.colour = "white"  # input("input colour: ")
         stockfish.set_skill_level(int(self.strength))
+
         self.model = load_model("D:/models/architecture434.json", "D:/models/bestweights4.h5")
+
         self.time_remaining = 600
         if self.colour == "white":
             self.colour = True
@@ -82,11 +84,14 @@ class Play:
             delay = predict(self.game.board.board_to_string(),
                             np.array([600, 0, 2000, self.time_remaining], dtype=np.float32), self.model)
             delay = int(delay[0][0])
+
             print(f'before {delay}')
             delay = np.random.normal(delay, 0.0075 * self.time_remaining)
             if delay < 0:
                 delay = 0
-            print(f'after {delay}')
+
+
+
             self.time_remaining -= delay
             time.sleep(delay)
             self.game.play_move(self.move_to_board(best_move)[0],
