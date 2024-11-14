@@ -3,6 +3,7 @@ import 'package:auto_mate_chess/constants/tint.dart';
 import 'package:auto_mate_chess/constants/font.dart';
 import 'package:flutter/material.dart';
 import '../utils/responsive_utils.dart';
+import '../../api_endpoint/api_call.dart' as api;
 
 class Challenge extends StatefulWidget {
   final String timeControl;
@@ -17,7 +18,7 @@ class _ChallengeState extends State<Challenge> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => print('test'),
+      onTap: () => api.getPost('/api/test'),
       child: Padding(
         padding: EdgeInsets.all(responsiveHeight(5, context)),
         child: SizedBox(

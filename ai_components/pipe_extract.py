@@ -1,8 +1,8 @@
 import subprocess
 import numpy as np
 import csv
-from utils.pgn_to_board import game_from_lines
-from chess.game import Game
+from backend.utils.pgn_to_board import game_from_lines
+from backend.chess.game import Game
 import zstandard as zstd
 
 counter = 0

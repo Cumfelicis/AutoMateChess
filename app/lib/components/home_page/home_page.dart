@@ -1,3 +1,4 @@
+import 'package:auto_mate_chess/components/commons/chess_board/board.dart';
 import 'package:flutter/material.dart';
 import '../computer/computer.dart';
 import '../../constants/tint.dart';
@@ -32,13 +33,16 @@ class _HomePageState extends State<HomePage> {
         ),
         body: navBarIndex == 0
             ? Container(
-                color: Colors.red,
-              )
+                color: Tint.background,
+                child: const Board(
+                  fen:
+                      'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+                ))
             : navBarIndex == 1
                 ? const Computer()
                 : navBarIndex == 2
                     ? Container(
-                        color: Colors.blue,
+                        color: Colors.black,
                       )
                     : Container());
   }
