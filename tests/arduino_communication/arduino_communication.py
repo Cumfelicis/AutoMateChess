@@ -8,7 +8,6 @@ class AnalogReader:
         time.sleep(1)
 
     def get_state(self):
-        print(self.pin.read())
         return self.pin.read()
 
 

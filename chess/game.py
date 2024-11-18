@@ -6,7 +6,7 @@ import math
 import pygame.display
 import sys
 from utils import board_to_name
-from config import config
+from tests.config import config
 from utils import name_to_board
 from simulation.piece import SimBishop as Bishop, SimPawn as Pawn, SimQueen as Queen, SimKing as King, \
     SimKnight as Knight, SimRook as Rook, SimNo as No, SimPiece as Piece

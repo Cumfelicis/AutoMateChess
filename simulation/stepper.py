@@ -1,4 +1,4 @@
-from config import config
+from tests.config import config
 
 
 class SimStepper:

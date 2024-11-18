@@ -1,5 +1,5 @@
 import pygame.draw
-from config import config
+from tests.config import config
 from simulation.piece import SimNo
 
 

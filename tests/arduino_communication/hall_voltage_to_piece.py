@@ -1,4 +1,4 @@
-from config import config
+from tests.config import config
 
 hall_voltage_to_piece = {  # maps the voltage measured at the hall-effect sensors to the different pieces
     100: 'b',

@@ -1,4 +1,4 @@
-from config import config
+from tests.config import config
 
 
 def get_pos(index, axis):

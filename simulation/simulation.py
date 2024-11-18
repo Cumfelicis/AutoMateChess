@@ -3,7 +3,7 @@ import pygame.display
 from simulation.magnet import SimMagnet
 from simulation.stepper import SimStepper, SimMultistepper
 from simulation.piece import SimNo
-from config import config
+from tests.config import config
 import pygame as py
 import sys
 

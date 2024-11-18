@@ -1,5 +1,5 @@
 from chess.pieces import Piece
-from config import config
+from tests.config import config
 
 from copy import copy
 
