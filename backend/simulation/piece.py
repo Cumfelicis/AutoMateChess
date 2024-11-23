@@ -1,5 +1,5 @@
-from backend.chess.pieces import Piece
-from backend.config import config
+from chess.pieces import Piece
+from config import config
 
 from copy import copy
 

@@ -1,9 +1,9 @@
 import pygame.display
 
-from backend.simulation.magnet import SimMagnet
-from backend.simulation.stepper import SimStepper, SimMultistepper
-from backend.simulation.piece import SimNo
-from backend.config import config
+from simulation.magnet import SimMagnet
+from simulation.stepper import SimStepper, SimMultistepper
+from simulation.piece import SimNo
+from config import config
 import pygame as py
 import sys
 

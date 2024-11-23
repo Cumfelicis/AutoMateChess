@@ -5,10 +5,10 @@ import pygame as py
 import math
 import pygame.display
 import sys
-from backend.utils import board_to_name
-from backend.config import config
-from backend.utils import name_to_board
-from backend.simulation.piece import SimBishop as Bishop, SimPawn as Pawn, SimQueen as Queen, SimKing as King, \
+from utils import board_to_name
+from config import config
+from utils import name_to_board
+from simulation.piece import SimBishop as Bishop, SimPawn as Pawn, SimQueen as Queen, SimKing as King, \
     SimKnight as Knight, SimRook as Rook, SimNo as No, SimPiece as Piece
 from backend.simulation.simulation import Simulation
 import backend.arduino_communication

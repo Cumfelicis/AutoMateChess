@@ -1,6 +1,6 @@
 import pygame.draw
-from backend.config import config
-from backend.simulation.piece import SimNo
+from config import config
+from simulation.piece import SimNo
 
 
 class SimMagnet:
