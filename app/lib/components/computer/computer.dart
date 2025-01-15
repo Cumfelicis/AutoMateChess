@@ -16,20 +16,75 @@ class _ComputerState extends State<Computer> {
     return Container(
       color: Tint.background,
       child: Padding(
-        padding: EdgeInsets.symmetric(
-            horizontal: responsiveWidth(30, context),
-            vertical: responsiveHeight(35, context)),
-        child: GridView.count(
-          primary: false,
-          crossAxisCount: 3,
-          children: List.filled(
-              12,
-              const Challenge(
-                timeControl: '1 + 0',
-                mode: 'Bullet',
-              )),
-        ),
-      ),
+          padding: EdgeInsets.symmetric(
+              horizontal: responsiveWidth(30, context),
+              vertical: responsiveHeight(35, context)),
+          child: GridView.count(
+            primary: false,
+            crossAxisCount: 3,
+            children: const [
+              Challenge(
+                time: 300,
+                increment: 3,
+                mode: 'Blitz',
+              ),
+              Challenge(
+                time: 300,
+                increment: 5,
+                mode: 'Blitz',
+              ),
+              Challenge(
+                time: 420,
+                increment: 3,
+                mode: 'Blitz',
+              ),
+              Challenge(
+                time: 600,
+                increment: 5,
+                mode: 'Rapid',
+              ),
+              Challenge(
+                time: 600,
+                increment: 10,
+                mode: 'Rapid',
+              ),
+              Challenge(
+                time: 900,
+                increment: 5,
+                mode: 'Rapid',
+              ),
+              Challenge(
+                time: 900,
+                increment: 15,
+                mode: 'Rapid',
+              ),
+              Challenge(
+                time: 1200,
+                increment: 15,
+                mode: 'Rapid',
+              ),
+              Challenge(
+                time: 1500,
+                increment: 30,
+                mode: 'Rapid',
+              ),
+              Challenge(
+                time: 5400,
+                increment: 0,
+                mode: 'Classical',
+              ),
+              Challenge(
+                time: 5400,
+                increment: 30,
+                mode: 'Classical',
+              ),
+              Challenge(
+                time: 6000,
+                increment: 30,
+                mode: 'Classical',
+              ),
+            ],
+          )),
     );
   }
 }

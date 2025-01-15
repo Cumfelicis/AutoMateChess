@@ -37,7 +37,9 @@ class _HomePageState extends State<HomePage> {
                 child: const Board(
                   fen:
                       'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-                ))
+                  onChange: null,
+                ),
+              )
             : navBarIndex == 1
                 ? const Computer()
                 : navBarIndex == 2

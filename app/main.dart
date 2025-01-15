@@ -3,10 +3,13 @@ import 'dart:typed_data';
 
 import 'package:auto_mate_chess/components/commons/chess_board/piece.dart';
 import 'package:auto_mate_chess/components/utils/util_functions.dart';
+import 'package:auto_mate_chess/database/position.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'lib/components/home_page/home_page.dart';
 import 'package:http/http.dart';
+import 'package:hive/hive.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,12 +18,19 @@ void main() async {
       await PlatformAssetBundle().load('lib/assets/ca/lets-encrypt-r3.pem');
   SecurityContext.defaultContext
       .setTrustedCertificatesBytes(data.buffer.asUint8List());
-
+  await Hive.initFlutter();
+  Hive.registerAdapter(PositionAdapter());
+  Box startingPositions = await Hive.openBox('starting_positions');
+  if (startingPositions.isEmpty) {
+    startingPositions.add(Position(
+        name: 'Standard Position',
+        fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'));
+  }
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key}); 
+  const MyApp({super.key});
 
   // This widget is the root of your application.
   @override

@@ -14,3 +14,15 @@ void preCacheImages(BuildContext context) {
     precacheImage(AssetImage(path), context);
   }
 }
+
+Map createGameConfig(bool color, String setup, bool humanTime, bool ontime,
+    int startingTime, int increment) {
+  return {
+    'color': color,
+    'fen': setup, // starting position in FEN format
+    'human_time': humanTime,
+    'on_time': ontime,
+    'starting_time': startingTime,
+    'increment': increment
+  };
+}
