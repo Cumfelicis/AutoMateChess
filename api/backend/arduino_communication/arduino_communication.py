@@ -8,7 +8,8 @@ class AnalogReader:
         time.sleep(1)
 
     def get_state(self):
-        return self.pin.read()
+        values = [self.pin.read() for _ in range(10)]
+        return sum(values) / len(values) if values else None
 
 
 class HallSensor(AnalogReader):
@@ -33,19 +34,37 @@ class Led:
 
 
 class Magnet:
-    def __init__(self, magnet_pin, board, board_2):
-        self.magnet_pin = board.get_pin(f"d:{magnet_pin}:o")
-        self.led = Led(2, board_2)
+    def __init__(self, board, relais_1, relais_2, relais_3):
+        self.relais_1 = board.get_pin(f"d:{relais_1}:o")
+        self.relais_2 = board.get_pin(f"d:{relais_2}:o")
+        self.relais_3 = board.get_pin(f"d:{relais_3}:o")
 
-    def on(self):
-        self.magnet_pin.write(1)
-        self.led.on()
-        time.sleep(1)
+    def on(self, polarity):
+        print('on')
+        self.set_polarity(polarity)
+        
+    def test(self):
+        self.relais_1.write(0)
+        self.relais_3.write(1)
+        self.relais_2.write(0)
 
     def off(self):
-        self.magnet_pin.write(0)
-        self.led.off()
+        print('start-off')
+        self.relais_3.write(0)
         time.sleep(1)
+        self.relais_2.write(1)
+        print('off')
+        
+    def set_polarity(self, polarity):
+        if polarity:
+            self.relais_1.write(0)
+            time.sleep(1)
+            self.relais_2.write(0)
+        else:
+            self.relais_1.write(1)
+            time.sleep(1)
+            self.relais_2.write(1)
+            self.relais_3.write(1)
 
 
 class Stepper:
@@ -80,8 +99,9 @@ class Stepper:
     def reference(self):
         if self.two_stops:
             print("now both")
-            while not (self.stop.get_state() < 0.5 or self.second_stop.get_state() < 0.5):
+            while not (self.stop.get_state() < 0.5 and self.second_stop.get_state() < 0.5):
                 self.step(False)
+                '''
             if not (self.stop.get_state() < 0.5 and self.second_stop.get_state() < 0.5):
                 print("now only one")
                 if self.stop.get_state() < 0.5:
@@ -92,6 +112,7 @@ class Stepper:
                     print("now only left")
                     while not self.stop.get_state() < 0.5:
                         self.single_step(True, False)
+                '''
 
         else:
             while not self.stop.get_state() < 0.5:
@@ -126,14 +147,16 @@ class Stepper:
         self.step_pin.write(0)
 
     def step(self, direction):
+        if self.pos > 22500:
+            return
         if direction:
-            self.dir_pin.write(self.dir_true)
-            if self.second_dir_pin is not False:
-                self.second_dir_pin.write(self.dir_false)
-        else:
             self.dir_pin.write(self.dir_false)
             if self.second_dir_pin is not False:
                 self.second_dir_pin.write(self.dir_true)
+        else:
+            self.dir_pin.write(self.dir_true)
+            if self.second_dir_pin is not False:
+                self.second_dir_pin.write(self.dir_false)
 
         self.step_pin.write(1)
         #  time.sleep(0.0005)
@@ -191,12 +214,8 @@ class Multistepper:
     def run_to(self):
         running = True
         while running:
-            start = time.time()
-            #  time.sleep(1/1000)
             running = False
             for i in self.steppers:
                 i.run()
                 if i.in_movement():
                     running = True
-            end = time.time()
-            print(end - start)

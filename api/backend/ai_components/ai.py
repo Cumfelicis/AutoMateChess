@@ -84,7 +84,7 @@ def build_model():
 
     # Concatenate the outputs
     merged_output = layers.concatenate([cnn_output, decision_input])
-    final_output = layers.Dense(1, activation='linear')(merged_output)  # Regression task
+    final_output = layers.Dense(1, activation='linear')(merged_output)  # Regression task --> forecast
 
     # Compile the final model
     model = models.Model(inputs=[cnn_input, decision_input], outputs=final_output)

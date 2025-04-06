@@ -1,4 +1,5 @@
 import 'package:auto_mate_chess/components/commons/chess_board/board.dart';
+import 'package:auto_mate_chess/components/online/lichess.dart';
 import 'package:flutter/material.dart';
 import '../computer/computer.dart';
 import '../../constants/tint.dart';
@@ -32,14 +33,7 @@ class _HomePageState extends State<HomePage> {
           }),
         ),
         body: navBarIndex == 0
-            ? Container(
-                color: Tint.background,
-                child: const Board(
-                  fen:
-                      'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-                  onChange: null,
-                ),
-              )
+            ? Container(color: Tint.background, child: ChallengesPage())
             : navBarIndex == 1
                 ? const Computer()
                 : navBarIndex == 2
