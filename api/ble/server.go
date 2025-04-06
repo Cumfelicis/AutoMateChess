@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/muka/go-bluetooth/api"
+	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 )
 
 const (
