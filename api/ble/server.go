@@ -1,67 +1,57 @@
+//go:build ignore
+// +build ignore
+
 package main
 
 import (
 	"fmt"
-	"os"
-	"time"
+	"log"
 
-	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/bluez/profile/gatt"
-)
-
-const (
-	serviceUUID        = "12345678-1234-5678-1234-56789abcdef0"
-	characteristicUUID = "12345678-1234-5678-1234-56789abcdef1"
+	"github.com/paypal/gatt"
+	"github.com/paypal/gatt/examples/option"
+	"github.com/paypal/gatt/examples/service"
 )
 
 func main() {
-	adapterID := "hci0"
-
-	// Initialize Bluetooth adapter
-	a, err := api.GetAdapter(adapterID)
+	d, err := gatt.NewDevice(option.DefaultServerOptions...)
 	if err != nil {
-		fmt.Println("Failed to get adapter:", err)
-		os.Exit(1)
+		log.Fatalf("Failed to open device, err: %s", err)
 	}
 
-	err = a.FlushDevices()
-	if err != nil {
-		fmt.Println("Flush failed:", err)
+	// Register optional handlers.
+	d.Handle(
+		gatt.CentralConnected(func(c gatt.Central) { fmt.Println("Connect: ", c.ID()) }),
+		gatt.CentralDisconnected(func(c gatt.Central) { fmt.Println("Disconnect: ", c.ID()) }),
+	)
+
+	// A mandatory handler for monitoring device state.
+	onStateChanged := func(d gatt.Device, s gatt.State) {
+		fmt.Printf("State: %s\n", s)
+		switch s {
+		case gatt.StatePoweredOn:
+			// Setup GAP and GATT services for Linux implementation.
+			// OS X doesn't export the access of these services.
+			d.AddService(service.NewGapService("Gopher")) // no effect on OS X
+			d.AddService(service.NewGattService())        // no effect on OS X
+
+			// A simple count service for demo.
+			s1 := service.NewCountService()
+			d.AddService(s1)
+
+			// A fake battery service for demo.
+			s2 := service.NewBatteryService()
+			d.AddService(s2)
+
+			// Advertise device name and service's UUIDs.
+			d.AdvertiseNameAndServices("Gopher", []gatt.UUID{s1.UUID(), s2.UUID()})
+
+			// Advertise as an OpenBeacon iBeacon
+			d.AdvertiseIBeacon(gatt.MustParseUUID("AA6062F098CA42118EC4193EB73CCEB6"), 1, 2, -59)
+
+		default:
+		}
 	}
 
-	fmt.Println("Setting up BLE GATT server...")
-
-	srv, err := gatt.NewServiceServer(adapterID, serviceUUID, true)
-	if err != nil {
-		panic(err)
-	}
-
-	charProps := gatt.CharProperties{
-		UUID:  characteristicUUID,
-		Flags: []string{"read", "write"},
-	}
-
-	char, err := srv.AddCharacteristic(charProps)
-	if err != nil {
-		panic(err)
-	}
-
-	char.OnWrite(func(value []byte) {
-		fmt.Println("Received via BLE:", string(value))
-	})
-
-	char.OnRead(func() ([]byte, error) {
-		msg := fmt.Sprintf("Hello from %s!", adapterID)
-		return []byte(msg), nil
-	})
-
-	err = srv.Register()
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("BLE GATT server is running. Ready for connections!")
-	for {
-		time.Sleep(10 * time.Second)
-	}
+	d.Init(onStateChanged)
+	select {}
 }
