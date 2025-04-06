@@ -1,12 +1,12 @@
 import berserk
-import game as g
-import board_to_name
+from ..chess import game as g
+from ..utils import board_to_name
 import pygame as py
 import pygame.display
 import sys
-import Button
-import arduino_communication
-import name_to_board as ntb
+from ..utils import Button
+from ..arduino_communication import arduino_communication
+from ..utils import name_to_board as ntb
 import pyfirmata, pyfirmata.util
 import time
 
@@ -15,7 +15,7 @@ with open("C:/Users/flixg/Documents/lichessToken.txt") as token:
     session = berserk.TokenSession(token.readline())
 client = berserk.Client(session=session)
 
-
+'''
 board_1 = pyfirmata.Arduino("COM5")
 board_2 = pyfirmata.Arduino("COM3")
 
@@ -26,20 +26,29 @@ it.start()
 magnet = arduino_communication.Magnet(12, board_1, board_2)
 magnet.off()
 time.sleep(1)
+'''
 
 
 class Play:
-    def __init__(self, stepper_x=False, stepper_y=False, magnet=False, real=False):
+    def __init__(self, command_queue, time=False, increment = False, challenge_id=False, stepper_x=False, stepper_y=False, magnet=False, real=False):
         self.window = pygame.display.set_mode((1536, 810), pygame.RESIZABLE)
         self.game = g.Game(self.window, stepper_x=stepper_x, stepper_y=stepper_y, magnet=magnet,  real_game=real)
         print("test")
         self.button = Button.Button(200, 1000, 100, 100, self.window, "exit")
-
+        print(challenge_id)
+        if challenge_id is not False:
+            client.challenges.accept(challenge_id=challenge_id)
+            print('accepted')
+        else:
+            seek = client.challenges.create_open(rated=False, clock_limit=time, increment=increment)
+        while not client.games.get_ongoing():
+            time.sleep(0.1)
         self.loop()
 
     def loop(self):
         clock = py.time.Clock()
         self.game.setup_board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", first_setup=True)
+        last_move = self.game.get_last_move()
         run = True
         while run:
             state = client.games.get_ongoing()[0]
@@ -49,12 +58,23 @@ class Play:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-            self.game.draw_board()
+            self.game.simulation.draw()
+            self.simulation.move_pieces()
             self.button.draw_button()
+            if self.game.get_last_move() != last_move:
+                last_move = self.game.get_last_move()
+                move = last_move.copy()[:3]
+                move.append(self.game.is_my_move(state['isMyTurn']))
+                yield move
             if self.button.is_pressed():
                 run = False
             if self.game.is_checkmate():
                 run = False
+            try:
+                command = self.command_queue.get(timeout=0.01)
+                self.on_command(command)
+            except Exception:
+                pass
             self.lichess_play_move(state)
 
             pygame.display.update()
@@ -69,8 +89,6 @@ class Play:
                     self.game.board.move_piece(last_move[0], last_move[1], promotion=last_move[2])
                 else:
                     self.game.board.move_piece(last_move[0], last_move[1])
-            if self.game.move_pieces() is True:
-                client.board.make_move(state["fullId"], self.board_to_move(self.game.get_last_move()))
 
     def move_to_board(self, move):
         first_move = ""
@@ -103,5 +121,5 @@ class Play:
             uci += move[3].lower()
         return uci
 
-
-play = Play(stepper_x=stepper_x, stepper_y=stepper_y, magnet=magnet, real=True)
+if __name__ == '__main__':
+    play = Play(stepper_x=stepper_x, stepper_y=stepper_y, magnet=magnet, real=True)

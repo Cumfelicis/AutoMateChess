@@ -8,15 +8,15 @@ import sys
 from ..utils import board_to_name
 from ..config import config
 from ..utils import name_to_board
-from ..simulation.piece import SimBishop as Bishop, SimPawn as Pawn, SimQueen as Queen, SimKing as King, \
-    SimKnight as Knight, SimRook as Rook, SimNo as No, SimPiece as Piece
+from .pieces import Bishop as Bishop, Pawn as Pawn, Queen as Queen, King as King, \
+    Knight as Knight, Rook as Rook, No as No, Piece as Piece
 from ..simulation.simulation import Simulation
 from ..utils import pos_to_real_board as ptrb
 from ..utils.piece_to_storage import piece_to_storage
 
 
 class Board:
-    def __init__(self, setup, alignment, pos_x, pos_y, window, stepper_x=False, stepper_y=False, magnet=False,
+    def __init__(self, setup, alignment, pos_x, pos_y, window, stepper_x=False, stepper_y=False, multistepper=False, magnet=False,
                  real_board=False):
         self.setup = setup  # the position the board is set up with
         self.real_board = real_board  # a bool to indicate weather this instance represents the real board
@@ -30,6 +30,11 @@ class Board:
         if self.real_board:  # TODO: make required, real ones or simulated
             self.stepper_x = stepper_x
             self.stepper_y = stepper_y
+            self.multistepper = multistepper
+            self.stepper_x.reference()
+            self.stepper_y.reference()
+            multistepper.add_stepper(self.stepper_x)
+            multistepper.add_stepper(self.stepper_y)
             self.magnet = magnet
         self.white_pieces = ["K", "Q", "R", "B", "N", "P"]  # a list of Piece names/Id's to check which color a piece is
         self.black_pieces = ["k", "q", "r", "b", "n", "p"]
@@ -337,7 +342,7 @@ class Board:
     def compare_boards(self, other_board):  # TODO: rewrite for detection
         for x, i in enumerate(self.squares):
             for y, j in enumerate(i):
-                if not j.name == other_board[x][y]:
+                if j.direction != other_board[x][y]:
                     return False
         return True
 
@@ -415,25 +420,85 @@ class Board:
             self.find_storage_pos(piece.name)
 
     def play_move_on_board(self, piece_square, target_square, captured=No(0, 0, 0, 0, 0, 0), castled=False,
-                           player_move=False):
+                           real_move=True, capture=False):
+        piece_to_move = copy.copy(self.squares[piece_square[0]][piece_square[1]])
+        piece_to_capture = copy.copy(self.squares[target_square[0]][target_square[1]])
         if not captured.name == "!":
             self.move_to_square(captured.pos)
             self.remove_piece([captured.name, target_square])
         self.move_to_square(piece_square)
-        self.magnet.on()
-        self.stepper_x.move(self.between_squares)
-        self.stepper_y.move_to(ptrb.get_pos(target_square[0] + 0.5, False))
-        self.stepper_x.run_to()
-        self.stepper_y.run_to()
-        self.stepper_x.move_to(ptrb.get_pos(target_square[1], True))
-        self.stepper_y.move(-self.between_squares)
-        self.stepper_x.run_to()
-        self.stepper_y.run_to()
+        if capture:
+            if piece_to_move.direction == -1:
+                self.magnet.on(False)
+            else:
+                self.magnet.on(True)
+        else:
+            if piece_to_move.direction == -1:
+                self.magnet.on(True)
+            else:
+                self.magnet.on(False)
+        if real_move:
+            if not self.squares[target_square[0]][target_square[1]].name.lower() == 'n':
+                self.stepper_y.move_to(ptrb.get_pos(target_square[0], False))
+                self.stepper_x.move_to(ptrb.get_pos(target_square[1], True))
+                self.multistepper.run_to()
+            elif self.squares[target_square[0]][target_square[1]].name.lower() == 'n':
+                if target_square[1] > piece_square[1]:
+                    self.stepper_x.move(self.between_squares)
+                    self.stepper_x.run_to()
+                    self.stepper_y.move(self.between_squares)
+                    self.stepper_y.run_to()
+                    self.stepper_y.move_to(ptrb.get_pos(target_square[0] + 0.5, False))
+                    self.stepper_y.run_to()
+                    self.stepper_x.move_to(ptrb.get_pos(target_square[1] + 0.5, True))
+                    self.stepper_x.run_to()
+                    self.stepper_x.move(-self.between_squares)
+                    self.stepper_x.run_to()
+                    self.stepper_y.move(-self.between_squares)
+                    self.stepper_y.run_to()
+                else:
+                    self.stepper_x.move(self.between_squares)
+                    self.stepper_x.run_to()
+                    self.stepper_y.move(-self.between_squares)
+                    self.stepper_y.run_to()
+                    self.stepper_y.move_to(ptrb.get_pos(target_square[0] + 0.5, False))
+                    self.stepper_y.run_to()
+                    self.stepper_x.move_to(ptrb.get_pos(target_square[1] - 0.5, True))
+                    self.stepper_x.run_to()
+                    self.stepper_x.move(-self.between_squares)
+                    self.stepper_x.run_to()
+                    self.stepper_y.move(self.between_squares)
+                    self.stepper_y.run_to()
+            else:
+                self.stepper_x.move(self.between_squares)
+                self.stepper_y.move(self.between_squares)
+                self.multistepper.run_to()
+                self.stepper_y.move_to(ptrb.get_pos(target_square[0] + 0.5, False))
+                self.stepper_y.run_to()
+                self.stepper_x.move_to(ptrb.get_pos(target_square[1] + 0.5, True))
+                self.stepper_x.run_to()
+                self.stepper_x.move(-self.between_squares)
+                self.stepper_y.move(-self.between_squares)
+                self.multistepper.run_to()
+        else:
+            self.stepper_x.move(self.between_squares)
+            self.stepper_y.move(self.between_squares)
+            self.multistepper.run_to()
+            self.stepper_y.move_to(ptrb.get_pos(target_square[0] + 0.5, False))
+            self.stepper_y.run_to()
+            self.stepper_x.move_to(ptrb.get_pos(target_square[1] + 0.5, True))
+            self.stepper_x.run_to()
+            self.stepper_x.move(self.between_squares)
+            self.stepper_y.move(self.between_squares)
+            self.multistepper.run_to()
         self.magnet.off()
         if castled:
             if target_square[1] == 6:
                 self.move_to_square([target_square[0], target_square[1] + 1])
-                self.magnet.on()
+                if piece_to_move.direction == -1:
+                    self.magnet.on(True)
+                else:
+                    self.magnet.on(False)
                 self.stepper_y.move(self.between_squares)
                 self.stepper_y.run_to()
                 self.stepper_x.move_to(ptrb.get_pos(piece_square[1] + 1, True))
@@ -443,7 +508,10 @@ class Board:
                 self.magnet.off()
             else:
                 self.move_to_square([target_square[0], target_square[1] - 2])
-                self.magnet.on()
+                if piece_to_move.direction == -1:
+                    self.magnet.on(True)
+                else:
+                    self.magnet.on(False)
                 self.stepper_y.move(self.between_squares)
                 self.stepper_y.run_to()
                 self.stepper_x.move_to(ptrb.get_pos(piece_square[1] + 1, True))
@@ -477,7 +545,7 @@ class Board:
             self.play_move_on_board(target_square, piece_square)
 
     def remove_piece(self, piece):
-        self.play_move_on_board(piece[1], self.find_storage_pos(piece[0]))
+        self.play_move_on_board(piece[1], self.find_storage_pos(piece[0]), real_move=False, capture=True)
 
     def move_to_square(self, square):
         self.stepper_x.move_to(ptrb.get_pos(square[1], True))
@@ -904,16 +972,19 @@ class Square:
 
 class Game:
     def __init__(self, window=pygame.display.set_mode((1536, 810), pygame.RESIZABLE), stepper_x=False, stepper_y=False,
-                 magnet=False, real_game=False):
+                 magnet=False, array=False, multistepper=False, real_game=False):
         self.window = window
         self.real = real_game
+        self.array = array
+        print('game')
+        self.array.get_position()
         self.clock = py.time.Clock()
         board_pos = config['STEPPER_STARTING_POS']
         self.sim_board = Board(None, True, board_pos[0], board_pos[1], self.window, real_board=False)
         self.simulation = Simulation(self.window, self.sim_board, Mouse(self.sim_board), self.clock)
-        self.board = Board(None, True, board_pos[0], board_pos[1], self.window, stepper_x=self.simulation.stepper_x,
-                           stepper_y=self.simulation.stepper_y,
-                           magnet=self.simulation.magnet,
+        self.board = Board(None, True, board_pos[0], board_pos[1], self.window, stepper_x=stepper_x,
+                           stepper_y=stepper_y, multistepper=multistepper,
+                           magnet=magnet,
                            real_board=real_game)
 
         self.mouse = Mouse(self.board)
@@ -1000,6 +1071,10 @@ class Game:
 
     def get_last_move(self):
         return self.board.last_move
+    
+    def find_played_move(self):
+        while not self.board.find_played_move(self.array.get_position()):
+            pass
 
 
 if __name__ == "__main__":

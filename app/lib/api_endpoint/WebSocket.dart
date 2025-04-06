@@ -4,12 +4,14 @@ import 'dart:io';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class WebSocket {
-  IO.Socket socket = IO.io('http://192.168.178.64:5000/', <String, dynamic>{
+  IO.Socket socket = IO.io('http://172.20.10.4:5000', <String, dynamic>{
     'transports': ['websocket'],
     'reconnect': true,
     'reconnectDelay': 5000,
     'reconnectAttempts': 10
   });
+  dynamic challenges;
+
   Function(dynamic) onMove = (move) {};
   WebSocket() {
     socket.onConnect((_) {
@@ -37,6 +39,7 @@ class WebSocket {
       (data) => print(data),
     );
     socket.on('move', (data) => onMove(data));
+    socket.on('challenges', (_challenges) => challenges = _challenges);
     // Set up a periodic timer to send a ping message every 30 second
   }
 
@@ -47,6 +50,18 @@ class WebSocket {
 
   void startStream() {
     socket.emit('start_stream');
+  }
+
+  void checkForMove() {
+    socket.emit('check');
+  }
+
+  void getLichessChallenges() {
+    socket.emit('challenges');
+  }
+
+  void startOnlineGame(config) {
+    socket.emit('start_lichess', config);
   }
 }
 

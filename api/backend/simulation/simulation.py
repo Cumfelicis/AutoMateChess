@@ -18,8 +18,7 @@ class Simulation:
         self.multi_stepper = SimMultistepper(self.clock, self.draw)
         self.stepper_x = SimStepper(True, self.magnet, self.clock, self.draw)
         self.stepper_y = SimStepper(False, self.magnet, self.clock, self.draw)
-        self.multi_stepper.add_stepper(self.stepper_x)
-        self.multi_stepper.add_stepper(self.stepper_y)
+        self.multistepper = SimMultistepper(self.clock, self.draw)
         self.dragging = SimNo(0, 0, 0, 0, 0, 0)
         self.first_drag = True
 

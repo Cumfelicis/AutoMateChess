@@ -26,7 +26,7 @@ class SimMagnet:
         y = round((pos[0] - self.board_pos[0]) / self.board_size - 0.25)
         return [x, y]
 
-    def on(self):
+    def on(self, test):
         coordinates = self.get_coordinates((
         config['STEPPER_STARTING_POS'][0] + self.pos[0], config['STEPPER_STARTING_POS'][1] + self.pos[1]))
         if coordinates[0] < 0:

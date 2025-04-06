@@ -33,9 +33,9 @@ time.sleep(1)
 
 
 class Play(Module):
-    def __init__(self, fen, time, increment, stepper_x=False, stepper_y=False, magnet=False, real=False):
+    def __init__(self, fen, time, increment, command_queue, stepper_x=False, stepper_y=False, magnet=False, real=False, multistepper=False, array=False):
         self.window = pygame.display.set_mode((1536, 810), pygame.RESIZABLE)
-        self.strength = 50  # input("input stockfish strength: ")
+        self.strength = 25  # input("input stockfish strength: ")
         self.colour = "white"  # input("input colour: ")
         stockfish.set_skill_level(int(self.strength))
         current_dir = Path(__file__).parent
@@ -48,11 +48,13 @@ class Play(Module):
         self.fen = fen
         self.time = time
         self.incerement = increment
+        self.command_queue = command_queue
+        self.array = array
         if self.colour == "white":
             self.colour = True
         else:
             self.colour = False
-        self.game = g.Game(self.window, stepper_x=stepper_x, stepper_y=stepper_y, magnet=magnet, real_game=real)
+        self.game = g.Game(self.window, stepper_x=stepper_x, stepper_y=stepper_y, magnet=magnet, real_game=real, multistepper=multistepper, array=array)
         print("test")
         self.button = Button(200, 1000, 100, 100, self.window, "exit")
 
@@ -63,6 +65,10 @@ class Play(Module):
 
     def on_end(self, result):
         return super().on_end(result)
+    
+    def on_command(self, command):
+        if command == 'check':
+            self.game.find_played_move()
 
     def loop(self):
         pygame.display.set_caption(f"playing against stockfish on level {self.strength}")
@@ -70,6 +76,9 @@ class Play(Module):
         self.game.setup_board(self.fen)
         last_move = self.game.get_last_move()
         run = True
+        self.array.calibrate()
+        print('stockfish')
+        self.array.get_position()
         while run:
             clock.tick(30)
             self.window.fill((176, 196, 222))
@@ -79,17 +88,23 @@ class Play(Module):
                     sys.exit()
             self.game.simulation.draw()
             self.game.simulation.move_pieces()
-            self.game.board.find_played_move(list(map(lambda e: list(map(lambda x: x.name, e)), self.game.simulation.board.squares))) # TODO: remove and move to on_player_move
             self.button.draw_button()
             if self.game.get_last_move() != last_move:
                 last_move = self.game.get_last_move()
-                yield last_move
+                move = last_move.copy()[:3]
+                move.append(self.game.is_my_move(self.colour))
+                yield move
             if self.button.is_pressed():
                 run = False
                 self.game.reset_board()
             if self.game.is_checkmate():
                 run = False
                 self.game.reset_board()
+            try:
+                command = self.command_queue.get(timeout=0.01)
+                self.on_command(command)
+            except Exception:
+                pass
             self.stockfish_play_move()
 
             pygame.display.update()
@@ -98,10 +113,11 @@ class Play(Module):
         if not self.game.is_my_move(self.colour):
             stockfish.set_fen_position(self.game.get_fen())
             best_move = stockfish.get_best_move()
+            print(best_move)
             delay = predict(self.game.board.board_to_string(),
                             np.array([self.time, self.incerement, 2000, self.time_remaining], dtype=np.float32), self.model)
             delay = int(delay[0][0])
-            delay += np.random.normal(delay, self.time_remaining * 0.1)
+            delay += np.random.normal(delay, self.time_remaining * 0.01)
             print(delay)
             self.time_remaining -= delay
             time.sleep(delay if delay >= 0 else 0)

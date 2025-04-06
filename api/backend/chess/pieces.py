@@ -427,6 +427,7 @@ class No(Piece):
     def __init__(self, pos, colour, size, window, board_pos, board):
         super(No, self).__init__(pos, colour, size, window, board_pos, "!", True, board)
         self.pos = [0, 0]
+        self.direction = 0
 
     def draw_piece(self):
         pass

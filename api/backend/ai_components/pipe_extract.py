@@ -10,7 +10,7 @@ sets = 0
 pos_written = 0
 header = ['time_control', 'position', 'time_spent', 'elo', 'remaining_times']
 csv_file = None
-game_object = Game(real_game=False)
+# game_object = Game(real_game=False)
 
 
 def encode_chessboard(board):

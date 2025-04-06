@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:auto_mate_chess/api_endpoint/WebSocket.dart';
+import 'package:auto_mate_chess/components/utils/responsive_text.dart';
 import 'package:flutter/material.dart';
 
 class Clock extends StatefulWidget {
@@ -22,6 +23,7 @@ class _ClockState extends State<Clock> {
   late Duration player2Time;
   late int incrementSeconds;
   final webSocket = SOCKET;
+  String lastMove = 'test';
 
   Timer? timer;
   bool isPlayer1Turn = true;
@@ -91,7 +93,12 @@ class _ClockState extends State<Clock> {
     player2Time = Duration(seconds: widget.time);
     incrementSeconds = widget.increment;
     webSocket.onMove = (move) {
-      toggleTurn();
+      if (move['player']) {
+        setState(() {
+          lastMove = move['move'];
+        });
+        toggleTurn();
+      }
       print(move);
     };
     webSocket.startStream();
@@ -122,12 +129,18 @@ class _ClockState extends State<Clock> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(onPressed: pauseTimer, child: const Text("Pause")),
+              ResponsiveText(lastMove),
               ElevatedButton(onPressed: resetTimer, child: const Text("Reset")),
             ],
           ),
           Expanded(
             child: GestureDetector(
-              onTap: !isPlayer1Turn ? toggleTurn : null,
+              onTap: !isPlayer1Turn
+                  ? () {
+                      webSocket.checkForMove();
+                      toggleTurn();
+                    }
+                  : null,
               child: Container(
                 color: !isPlayer1Turn ? Colors.green[200] : Colors.grey[200],
                 child: Center(

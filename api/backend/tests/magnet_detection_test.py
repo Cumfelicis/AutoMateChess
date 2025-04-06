@@ -28,6 +28,7 @@ while True:
 while True:
   input('detect position')
   print(array.get_position())
+  time.sleep(1)
 
 
 

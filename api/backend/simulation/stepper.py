@@ -57,7 +57,7 @@ class SimMultistepper:
         self.clock = clock
         self.draw = draw
 
-    def add_stepper(self, stepper):
+    def add(self, stepper):
         self.steppers.append(stepper)
 
     def run(self):

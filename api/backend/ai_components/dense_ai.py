@@ -101,7 +101,7 @@ def build_model():
     decision_model = build_decision_model()
     output_model = build_output_layer()
 
-    # Define input layers for each model
+    # Defines input layers for each model
     cnn_input = layers.Input(shape=(8, 8, 12))  # 12-channel input representing the chessboard
     #  rnn_input = layers.Input(shape=(None, FEATURE_SIZE))  # Variable-length input for sequential information
     decision_input = layers.Input(shape=DECISION_INPUT_SIZE)  # other factors influencing the decision
@@ -113,8 +113,7 @@ def build_model():
     # Concatenate the outputs
     merged_output = layers.concatenate([cnn_output, decision_input])
     final_output = layers.Dense(1, activation='linear')(merged_output)  # Regression task
-
-    # Compile the final model
+    
     model = models.Model(inputs=[cnn_input, decision_input], outputs=final_output)
     model.compile(optimizer='adam', loss='mean_squared_error')
     return model
@@ -124,13 +123,11 @@ if __name__ == '__main__':
     lowest_loss = 100_000
     loss = []
     val_loss = []
-    # create the models
     model = build_model()
 
     # model.load_weights(f'D:/models/weights{73}.h5')
 
 
-    # Example data preparation
     def encode_board(board):
         encoded_board = np.zeros((8, 8), dtype=np.int32)
         for x, i in enumerate(board):
