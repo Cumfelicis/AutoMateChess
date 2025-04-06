@@ -3,52 +3,97 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/url"
 
+	"github.com/gorilla/websocket"
 	"github.com/paypal/gatt"
-	"github.com/paypal/gatt/examples/option"
-	"github.com/paypal/gatt/examples/service"
 )
 
+var wsConn *websocket.Conn
+
+// Connect to WebSocket server
+func connectToWebSocket() error {
+	// Define the WebSocket URL (replace with your server URL)
+	serverURL := "ws://localhost:8080" // Replace with your Python WebSocket server URL
+
+	// Parse the WebSocket URL
+	u, err := url.Parse(serverURL)
+	if err != nil {
+		return fmt.Errorf("invalid WebSocket URL: %v", err)
+	}
+
+	// Connect to the WebSocket server
+	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	if err != nil {
+		return fmt.Errorf("failed to connect to WebSocket server: %v", err)
+	}
+
+	// Save the connection for later use
+	wsConn = conn
+	return nil
+}
+
+// Send data to the WebSocket server
+func sendDataToWebSocket(data []byte) error {
+	if wsConn == nil {
+		return fmt.Errorf("WebSocket connection is not established")
+	}
+	// Send the data to WebSocket
+	err := wsConn.WriteMessage(websocket.TextMessage, data)
+	if err != nil {
+		return fmt.Errorf("failed to send message: %v", err)
+	}
+	return nil
+}
+
 func main() {
-	d, err := gatt.NewDevice(option.DefaultServerOptions...)
+	// Connect to WebSocket server
+	err := connectToWebSocket()
+	if err != nil {
+		log.Fatalf("Error connecting to WebSocket: %v", err)
+	}
+	defer wsConn.Close()
+
+	// Setup BLE server
+	d, err := gatt.NewDevice(gatt.DefaultClientOptions...)
 	if err != nil {
 		log.Fatalf("Failed to open device, err: %s", err)
 	}
 
-	// Register optional handlers.
+	// Register handlers
 	d.Handle(
 		gatt.CentralConnected(func(c gatt.Central) { fmt.Println("Connect: ", c.ID()) }),
 		gatt.CentralDisconnected(func(c gatt.Central) { fmt.Println("Disconnect: ", c.ID()) }),
 	)
 
-	// A mandatory handler for monitoring device state.
+	// When Bluetooth state changes, configure the service and characteristics
 	onStateChanged := func(d gatt.Device, s gatt.State) {
 		fmt.Printf("State: %s\n", s)
 		switch s {
 		case gatt.StatePoweredOn:
-			// Setup GAP and GATT services for Linux implementation.
-			// OS X doesn't export the access of these services.
-			d.AddService(service.NewGapService("Gopher")) // no effect on OS X
-			d.AddService(service.NewGattService())        // no effect on OS X
+			// Create a new service with characteristics
+			service := gatt.NewService(gatt.MustParseUUID("0000180f-0000-1000-8000-00805f9b34fb"))
+			characteristic := service.AddCharacteristic(gatt.MustParseUUID("00002a19-0000-1000-8000-00805f9b34fb"))
+			characteristic.HandleWrite(func(c gatt.ClientCharacteristic, data []byte) {
+				fmt.Printf("Received data from client: %s\n", string(data))
 
-			// A simple count service for demo.
-			s1 := service.NewCountService()
-			d.AddService(s1)
+				// Send data to WebSocket server
+				err := sendDataToWebSocket(data)
+				if err != nil {
+					fmt.Println("Failed to send data to WebSocket:", err)
+				}
+			})
 
-			// A fake battery service for demo.
-			s2 := service.NewBatteryService()
-			d.AddService(s2)
-
-			// Advertise device name and service's UUIDs.
-			d.AdvertiseNameAndServices("Gopher", []gatt.UUID{s1.UUID(), s2.UUID()})
-
-			// Advertise as an OpenBeacon iBeacon
-			d.AdvertiseIBeacon(gatt.MustParseUUID("AA6062F098CA42118EC4193EB73CCEB6"), 1, 2, -59)
-
+			// Add service to the device and start advertising
+			d.AddService(service)
+			d.AdvertiseNameAndServices("GoBLE", []gatt.UUID{service.UUID()})
 		default:
 		}
 	}
 
+	// Initialize the device with the onStateChanged callback
 	d.Init(onStateChanged)
+
+	// Keep the program running to allow BLE communication
 	select {}
 }
