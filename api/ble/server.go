@@ -6,11 +6,10 @@ import (
 	"time"
 
 	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 )
 
 const (
-	serviceUUID       = "12345678-1234-5678-1234-56789abcdef0"
+	serviceUUID        = "12345678-1234-5678-1234-56789abcdef0"
 	characteristicUUID = "12345678-1234-5678-1234-56789abcdef1"
 )
 
