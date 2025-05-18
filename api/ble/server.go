@@ -43,7 +43,7 @@ func main() {
 				notifier = n
 				for !n.Done() {
 					time.Sleep(time.Second * 10)
-					sendFragmentedMessage(notifier, "Periodic server message")
+					sendFragmentedMessage(notifier, "Periodic server")
 				}
 			})
 			// Add and advertise
