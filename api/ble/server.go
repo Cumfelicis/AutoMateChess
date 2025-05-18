@@ -31,9 +31,6 @@ func main() {
 			char := svc.AddCharacteristic(gatt.MustParseUUID("abcd"))
 			char.HandleWrite(gatt.WriteHandlerFunc(func(r gatt.Request, data []byte) (status byte) {
 				fmt.Printf("Received data: %s\n", string(data)) // Or process bytes directly
-				return gatt.StatusSuccess
-			}))
-			char.HandleWrite(gatt.WriteHandlerFunc(func(r gatt.Request, data []byte) (status byte) {
 				if notifier != nil {
 					notifier.Write([]byte("ACK:" + string(data)))
 				}
