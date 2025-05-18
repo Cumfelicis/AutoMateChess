@@ -74,15 +74,31 @@ while True:
 #stepper_x.reference()
 #stepper_y.reference()
 
-'''
+
 while True:
-    stepper_x.move_to(0)
-    stepper_x.run_to()
+    stepper_x.reference()
+    magnet.on(True)
     time.sleep(1)
-    stepper_x.move_to(2500)
+    stepper_x.move_to(8800)
     stepper_x.run_to()
-    time.sleep(10)
-'''
+    magnet.off()
+    time.sleep(1)
+    stepper_x.reference()
+    magnet.on(False)
+    time.sleep(1)
+    stepper_x.move_to(8800)
+    stepper_x.run_to()
+    magnet.off()
+    time.sleep(1)
+    magnet.on(True)
+    stepper_x.reference()
+    magnet.off()
+    time.sleep(1)
+    stepper_x.move_to(8800)
+    stepper_x.run_to()
+    magnet.on(False)
+    time.sleep(1)
+
 '''
 stepper_y.move_to(50 + 7 * 1260)
 stepper_y.run_to()
@@ -101,9 +117,11 @@ while True:
     stepper_y.reference() 
 '''
 
+'''
 while True:
     print(array.get_position())
     time.sleep(1)
+'''
 
 
 
