@@ -85,6 +85,6 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 		fmt.Println("Payload: " + string(payload))
 		// Write and delay a little to avoid overloading BLE stack
 		n.Write(chunk)
-		time.Sleep(20 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 	}
 }
