@@ -11,12 +11,15 @@ class BLE_Connector {
   late StreamSubscription<ConnectionStateUpdate> _connectionStream;
   late QualifiedCharacteristic _rxCharacteristic;
   late QualifiedCharacteristic _txCharacteristic;
+  late QualifiedCharacteristic notifyCharacteristic;
   late DiscoveredDevice _device;
   final Uuid SERVICE_UUID = Uuid.parse("12345678-1234-5678-1234-56789abcdef0");
 
   final Uuid RX_CHAR_UUID = Uuid.parse("0000abcd-0000-1000-8000-00805f9b34fb");
 
   final Uuid TX_CHAR_UUID = Uuid.parse("0000abcd-0000-1000-8000-00805f9b34fb");
+
+  final CHAR_UUID = Uuid.parse("abcd");
 
   Future<void> requestBlePermissions() async {
     if (await Permission.location.isDenied) {
@@ -55,6 +58,15 @@ class BLE_Connector {
       print(connectionState.connectionState);
       if (connectionState.connectionState == DeviceConnectionState.connected) {
         print('connected to device: $device.id');
+
+        notifyCharacteristic = QualifiedCharacteristic(
+          serviceId: SERVICE_UUID,
+          characteristicId: CHAR_UUID,
+          deviceId: device.id,
+        );
+        _ble.subscribeToCharacteristic(notifyCharacteristic).listen((data) {
+          print("Notification from server: ${String.fromCharCodes(data)}");
+        });
         _readyCompleter.complete();
       } else if (connectionState.connectionState ==
           DeviceConnectionState.disconnected) {
