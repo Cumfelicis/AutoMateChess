@@ -81,8 +81,8 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 		chunk[1] = totalChunks
 		chunk[2] = byte(len(payload))
 		copy(chunk[3:], payload)
-		fmt.Println(chunk)
-		fmt.Println(payload)
+		fmt.Println("Chunk: " + string(chunk))
+		fmt.Println("Payload: " + string(payload))
 		// Write and delay a little to avoid overloading BLE stack
 		n.Write(chunk)
 		time.Sleep(20 * time.Millisecond)
