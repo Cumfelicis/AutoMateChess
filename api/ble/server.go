@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	var notifyChar *gatt.Characteristic
 	var notifier gatt.Notifier
 	d, err := gatt.NewDevice(option.DefaultServerOptions...)
 	if err != nil {
