@@ -9,6 +9,9 @@ import (
 	"github.com/paypal/gatt/examples/option"
 )
 
+const maxPayload = 17
+const maxChunks = 255
+
 func main() {
 	var notifier gatt.Notifier
 	d, err := gatt.NewDevice(option.DefaultServerOptions...)
@@ -32,7 +35,7 @@ func main() {
 			char.HandleWrite(gatt.WriteHandlerFunc(func(r gatt.Request, data []byte) (status byte) {
 				fmt.Printf("Received data: %s\n", string(data)) // Or process bytes directly
 				if notifier != nil {
-					notifier.Write([]byte("ACK:" + string(data)))
+					sendFragmentedMessage(notifier, "Ack: "+string(data))
 				}
 				return gatt.StatusSuccess
 			}))
@@ -40,7 +43,7 @@ func main() {
 				notifier = n
 				for !n.Done() {
 					time.Sleep(time.Second * 10)
-					n.Write([]byte("Periodic server message"))
+					sendFragmentedMessage(notifier, "Periodic server message")
 				}
 			})
 			// Add and advertise
@@ -51,4 +54,23 @@ func main() {
 
 	d.Init(onStateChanged)
 	select {}
+}
+
+func sendFragmentedMessage(n gatt.Notifier, message string) {
+	data := []byte(message)
+	totalChunks := byte((len(data) + maxPayload - 1) / maxPayload)
+	if totalChunks > maxChunks {
+		fmt.Println("Message to long to send via BLE fragments")
+		return
+	}
+	for i := byte(0); i < totalChunks; i++ {
+		start := int(i) * maxPayload
+		end := start + maxPayload
+		if end > len(data) {
+			end = len(data)
+		}
+		payload := data[start:end]
+		chunk := append([]byte{i, totalChunks, byte(len(payload))}, payload...)
+		n.Write(chunk)
+	}
 }
