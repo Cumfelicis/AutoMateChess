@@ -33,7 +33,6 @@ func main() {
 				fmt.Printf("Received data: %s\n", string(data)) // Or process bytes directly
 				return gatt.StatusSuccess
 			}))
-			notifyChar = char
 			char.HandleWrite(gatt.WriteHandlerFunc(func(r gatt.Request, data []byte) (status byte) {
 				if notifier != nil {
 					notifier.Write([]byte("ACK:" + string(data)))
