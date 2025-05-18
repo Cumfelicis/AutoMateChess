@@ -10,9 +10,17 @@ import 'package:hive_flutter/adapters.dart';
 import 'lib/components/home_page/home_page.dart';
 import 'package:http/http.dart';
 import 'package:hive/hive.dart';
+import 'lib/api_endpoint/ble_communication.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final connector = CONNECTOR;
+  await connector.requestBlePermissions();
+  await connector.startScanning();
+  print('test3');
+  await connector.onReady;
+  connector.sendData('161');
+  print('test2');
 
   ByteData data =
       await PlatformAssetBundle().load('lib/assets/ca/lets-encrypt-r3.pem');

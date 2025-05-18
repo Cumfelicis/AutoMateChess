@@ -3,12 +3,15 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/paypal/gatt"
 	"github.com/paypal/gatt/examples/option"
 )
 
 func main() {
+	var notifyChar *gatt.Characteristic
+	var notifier gatt.Notifier
 	d, err := gatt.NewDevice(option.DefaultServerOptions...)
 	if err != nil {
 		log.Fatalf("Failed to open device, err: %s", err)
@@ -31,7 +34,20 @@ func main() {
 				fmt.Printf("Received data: %s\n", string(data)) // Or process bytes directly
 				return gatt.StatusSuccess
 			}))
-
+			notifyChar = char
+			char.HandleWrite(gatt.WriteHandlerFunc(func(r gatt.Request, data []byte) (status byte) {
+				if notifier != nil {
+					notifier.Write([]byte("ACK:" + string(data)))
+				}
+				return gatt.StatusSuccess
+			}))
+			char.HandleNotifyFunc(func(r gatt.Request, n gatt.Notifier) {
+				notifier = n
+				for !n.Done() {
+					time.Sleep(time.Second * 10)
+					n.Write([]byte("Periodic server message"))
+				}
+			})
 			// Add and advertise
 			d.AddService(svc)
 			d.AdvertiseNameAndServices("GopherReceiver", []gatt.UUID{svc.UUID()})
