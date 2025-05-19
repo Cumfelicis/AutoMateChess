@@ -69,6 +69,7 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 	}
 
 	for i := byte(0); i < totalChunks; i++ {
+		fmt.Println(i)
 		start := int(i) * maxPayload
 		fmt.Println("Start: " + string(start))
 		end := start + maxPayload
