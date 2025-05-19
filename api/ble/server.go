@@ -33,7 +33,7 @@ func main() {
 			// Writable Characteristic
 			char := svc.AddCharacteristic(gatt.MustParseUUID("abcd"))
 			char.HandleWrite(gatt.WriteHandlerFunc(func(r gatt.Request, data []byte) (status byte) {
-				fmt.Printf("Received data: %s\n", string(data)) // Or process bytes directly
+				handleWriteFragmented(r, data)
 				if notifier != nil {
 					sendFragmentedMessage(notifier, "Ack: "+string(data))
 				}
@@ -81,8 +81,6 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 		}
 		payload := data[start:end]
 		fmt.Println("Payload: " + string(payload))
-
-		// Allocate a fresh buffer per chunk to avoid reuse issues
 		chunk := make([]byte, 3+len(payload))
 		chunk[0] = i
 		chunk[1] = totalChunks
@@ -91,8 +89,60 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 		copy(chunk[3:], payload)
 		fmt.Println("Chunk: " + string(chunk))
 		fmt.Println("Payload: " + string(payload))
-		// Write and delay a little to avoid overloading BLE stack
 		n.Write(chunk)
 		time.Sleep(100 * time.Millisecond)
 	}
+}
+
+type FragmentBuffer struct {
+	buffers     map[byte][]byte
+	totalChunks byte
+	received    byte
+}
+
+var fragmentMap = make(map[string]*FragmentBuffer)
+
+func handleWriteFragmented(r gatt.Request, data []byte) byte {
+	if len(data) < 3 {
+		fmt.Println("Invalid fragment")
+		return gatt.StatusUnexpectedError
+	}
+
+	chunkID := data[0]
+	totalChunks := data[1]
+	payloadLen := data[2]
+	payload := data[3:]
+
+	if len(payload) != int(payloadLen) {
+		fmt.Println("Payload length mismatch")
+		return gatt.StatusUnexpectedError
+	}
+
+	clientID := r.Central.ID() // use client UUID to identify unique sessions
+
+	buf, ok := fragmentMap[clientID]
+	if !ok || chunkID == 0 {
+		// Initialize buffer on first chunk or reset
+		buf = &FragmentBuffer{
+			buffers:     make(map[byte][]byte),
+			totalChunks: totalChunks,
+			received:    0,
+		}
+		fragmentMap[clientID] = buf
+	}
+
+	buf.buffers[chunkID] = payload
+	buf.received++
+
+	if buf.received == buf.totalChunks {
+		// All chunks received
+		var fullMessage []byte
+		for i := byte(0); i < buf.totalChunks; i++ {
+			fullMessage = append(fullMessage, buf.buffers[i]...)
+		}
+		fmt.Println("Reassembled message:", string(fullMessage))
+		delete(fragmentMap, clientID)
+	}
+
+	return gatt.StatusSuccess
 }

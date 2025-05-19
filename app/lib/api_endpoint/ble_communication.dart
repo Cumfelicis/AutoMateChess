@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:auto_mate_chess/components/utils/ble_fragment_reassembler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -7,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 class BLE_Connector {
   final FlutterReactiveBle _ble = FlutterReactiveBle();
   final Completer<void> _readyCompleter = Completer<void>();
+  final _reassembler = BleMessageReassembler();
   late final StreamSubscription<DiscoveredDevice> _scanstream;
   late StreamSubscription<ConnectionStateUpdate> _connectionStream;
   late QualifiedCharacteristic _rxCharacteristic;
@@ -65,7 +68,7 @@ class BLE_Connector {
           deviceId: device.id,
         );
         _ble.subscribeToCharacteristic(notifyCharacteristic).listen((data) {
-          print("Notification from server: ${String.fromCharCodes(data)}");
+          _reassembler.handleIncomingData(data);
         });
         _readyCompleter.complete();
       } else if (connectionState.connectionState ==
@@ -86,6 +89,38 @@ class BLE_Connector {
       print('Data sent: $data');
     } catch (e) {
       print('Error writing: $e');
+    }
+  }
+
+  Future<void> sendFragmentedMessage(String message) async {
+    final data = utf8.encode(message);
+    const maxPayload = 17; // 20 - 3 bytes for metadata
+    final totalChunks = (data.length / maxPayload).ceil();
+    if (totalChunks > 255) {
+      print("Message too long");
+      return;
+    }
+
+    for (int i = 0; i < totalChunks; i++) {
+      final start = i * maxPayload;
+      final end =
+          (start + maxPayload > data.length) ? data.length : start + maxPayload;
+      final payload = data.sublist(start, end);
+
+      final chunk = [
+        i, // chunk number
+        totalChunks, // total number of chunks
+        payload.length, // actual payload length
+        ...payload
+      ];
+
+      await _ble.writeCharacteristicWithoutResponse(
+          QualifiedCharacteristic(
+              characteristicId: RX_CHAR_UUID,
+              serviceId: SERVICE_UUID,
+              deviceId: _device.id),
+          value: chunk);
+      await Future.delayed(const Duration(milliseconds: 50)); // pacing
     }
   }
 
