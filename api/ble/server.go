@@ -80,6 +80,7 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 		chunk[0] = i
 		chunk[1] = totalChunks
 		chunk[2] = byte(len(payload))
+		fmt.Println(string(chunk))
 		copy(chunk[3:], payload)
 		fmt.Println("Chunk: " + string(chunk))
 		fmt.Println("Payload: " + string(payload))
