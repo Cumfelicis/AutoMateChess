@@ -62,7 +62,7 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 	const maxPayload = 17
 	const maxChunks = 255
 
-	totalChunks := byte(len(data) / maxPayload)
+	totalChunks := byte(len(data)/maxPayload) + 1
 	if totalChunks > maxChunks {
 		fmt.Println("Message too long to send via BLE fragments")
 		return
