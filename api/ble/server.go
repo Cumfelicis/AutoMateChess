@@ -43,7 +43,7 @@ func main() {
 				notifier = n
 				for !n.Done() {
 					time.Sleep(time.Second * 10)
-					sendFragmentedMessage(notifier, "Periodic server Message eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+					sendFragmentedMessage(notifier, "Periodic server Message")
 				}
 			})
 			// Add and advertise
@@ -69,26 +69,17 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 	}
 
 	for i := byte(0); i < totalChunks; i++ {
-		fmt.Println(i)
 		start := int(i) * maxPayload
-		fmt.Println("Start: ")
-		fmt.Println(start)
 		end := start + maxPayload
-		fmt.Println("End: ")
-		fmt.Println(end)
 		if end > len(data) {
 			end = len(data)
 		}
 		payload := data[start:end]
-		fmt.Println("Payload: " + string(payload))
 		chunk := make([]byte, 3+len(payload))
 		chunk[0] = i
 		chunk[1] = totalChunks
 		chunk[2] = byte(len(payload))
-		fmt.Println("Chunk0:" + string(chunk))
 		copy(chunk[3:], payload)
-		fmt.Println("Chunk: " + string(chunk))
-		fmt.Println("Payload: " + string(payload))
 		n.Write(chunk)
 		time.Sleep(100 * time.Millisecond)
 	}
@@ -112,7 +103,8 @@ func handleWriteFragmented(r gatt.Request, data []byte) byte {
 	totalChunks := data[1]
 	payloadLen := data[2]
 	payload := data[3:]
-
+	fmt.Println(len(payload))
+	fmt.Println(int(payloadLen))
 	if len(payload) != int(payloadLen) {
 		fmt.Println("Payload length mismatch")
 		return gatt.StatusUnexpectedError
