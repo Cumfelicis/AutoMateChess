@@ -58,6 +58,7 @@ func main() {
 
 func sendFragmentedMessage(n gatt.Notifier, message string) {
 	data := []byte(message)
+	fmt.Println("data: " + string(data))
 	const maxPayload = 17
 	const maxChunks = 255
 
