@@ -62,7 +62,7 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 	const maxPayload = 17
 	const maxChunks = 255
 
-	totalChunks := byte((len(data) + maxPayload - 1) / maxPayload)
+	totalChunks := byte(len(data) / maxPayload)
 	if totalChunks > maxChunks {
 		fmt.Println("Message too long to send via BLE fragments")
 		return
@@ -70,18 +70,21 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 
 	for i := byte(0); i < totalChunks; i++ {
 		start := int(i) * maxPayload
+		fmt.Println("Start: " + string(start))
 		end := start + maxPayload
+		fmt.Println("Start: " + string(start))
 		if end > len(data) {
 			end = len(data)
 		}
 		payload := data[start:end]
+		fmt.Println("Payload: " + string(payload))
 
 		// Allocate a fresh buffer per chunk to avoid reuse issues
 		chunk := make([]byte, 3+len(payload))
 		chunk[0] = i
 		chunk[1] = totalChunks
 		chunk[2] = byte(len(payload))
-		fmt.Println(string(chunk))
+		fmt.Println("Chunk0:" + string(chunk))
 		copy(chunk[3:], payload)
 		fmt.Println("Chunk: " + string(chunk))
 		fmt.Println("Payload: " + string(payload))
