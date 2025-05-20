@@ -1,4 +1,5 @@
-import 'package:auto_mate_chess/api_endpoint/WebSocket.dart';
+import 'package:auto_mate_chess/api_endpoint/ble_communication.dart';
+import 'package:auto_mate_chess/api_endpoint/communicator.dart';
 import 'package:auto_mate_chess/components/clock.dart';
 import 'package:auto_mate_chess/components/commons/add_position.dart';
 import 'package:auto_mate_chess/components/commons/drobdown_menu.dart';
@@ -33,7 +34,7 @@ class _CustomChallengeState extends State<CustomChallenge> {
   late double selectedIncrement; // Increment in seconds
   bool onTime = true;
   bool smartTime = true;
-  final WebSocket socket = SOCKET;
+  final Communicator socket = CONNECTOR.communicator;
   String? opponent = 'Stockfish';
   dynamic
       startingPosition = // needs to be dynamic since hive provides dynamic vlaues as it is not aware of type

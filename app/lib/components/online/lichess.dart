@@ -1,4 +1,5 @@
-import 'package:auto_mate_chess/api_endpoint/WebSocket.dart';
+import 'package:auto_mate_chess/api_endpoint/ble_communication.dart';
+import 'package:auto_mate_chess/api_endpoint/communicator.dart';
 import 'package:auto_mate_chess/components/utils/responsive_text.dart';
 import 'package:flutter/material.dart';
 
@@ -10,7 +11,7 @@ class ChallengesPage extends StatefulWidget {
 class _ChallengesPageState extends State<ChallengesPage> {
   late List<dynamic> _challenges;
   bool _loading = false;
-  final WebSocket websocket = SOCKET;
+  final Communicator websocket = CONNECTOR.communicator;
 
   @override
   void initState() {
@@ -61,7 +62,7 @@ class _ChallengesPageState extends State<ChallengesPage> {
                 ),
       floatingActionButton: FloatingActionButton(
         onPressed: _fetchChallenges,
-        child: Icon(Icons.refresh),
+        child: const Icon(Icons.refresh),
       ),
     );
   }

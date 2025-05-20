@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:auto_mate_chess/api_endpoint/communicator.dart';
 import 'package:auto_mate_chess/components/utils/ble_fragment_reassembler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
@@ -9,7 +10,8 @@ import 'package:permission_handler/permission_handler.dart';
 class BLE_Connector {
   final FlutterReactiveBle _ble = FlutterReactiveBle();
   final Completer<void> _readyCompleter = Completer<void>();
-  final _reassembler = BleMessageReassembler();
+  late final BleMessageReassembler _reassembler;
+  late final Communicator communicator;
   late final StreamSubscription<DiscoveredDevice> _scanstream;
   late StreamSubscription<ConnectionStateUpdate> _connectionStream;
   late QualifiedCharacteristic _rxCharacteristic;
@@ -23,6 +25,11 @@ class BLE_Connector {
   final Uuid TX_CHAR_UUID = Uuid.parse("0000abcd-0000-1000-8000-00805f9b34fb");
 
   final CHAR_UUID = Uuid.parse("abcd");
+
+  BLE_Connector() {
+    communicator = Communicator(this);
+    _reassembler = BleMessageReassembler(communicator);
+  }
 
   Future<void> requestBlePermissions() async {
     if (await Permission.location.isDenied) {
@@ -80,13 +87,7 @@ class BLE_Connector {
 
   Future<void> sendData(String data) async {
     try {
-      await _ble.writeCharacteristicWithoutResponse(
-          QualifiedCharacteristic(
-              characteristicId: RX_CHAR_UUID,
-              serviceId: SERVICE_UUID,
-              deviceId: _device.id),
-          value: data.codeUnits);
-      print('Data sent: $data');
+      await sendFragmentedMessage(data);
     } catch (e) {
       print('Error writing: $e');
     }
@@ -107,12 +108,13 @@ class BLE_Connector {
           (start + maxPayload > data.length) ? data.length : start + maxPayload;
       final payload = data.sublist(start, end);
 
-      final chunk = [
-        i, // chunk number
-        totalChunks, // total number of chunks
-        payload.length, // actual payload length
+      final chunk = <int>[
+        i & 0xFF, // chunk number (1 byte)
+        totalChunks & 0xFF, // total chunks (1 byte)
+        payload.length & 0xFF, // payload length (1 byte)
         ...payload
       ];
+      print(chunk);
 
       await _ble.writeCharacteristicWithoutResponse(
           QualifiedCharacteristic(

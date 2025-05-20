@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	websocketclient "github.com/flixg/automatechess/api/ble/socket"
 	"github.com/paypal/gatt"
 	"github.com/paypal/gatt/examples/option"
 )
@@ -14,6 +15,10 @@ const maxChunks = 255
 
 func main() {
 	var notifier gatt.Notifier
+	_, err := websocketclient.NewWebSocketClient("ws://localhost:8080/ws")
+	if err != nil {
+		panic(err)
+	}
 	d, err := gatt.NewDevice(option.DefaultServerOptions...)
 	if err != nil {
 		log.Fatalf("Failed to open device, err: %s", err)
