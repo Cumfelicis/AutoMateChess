@@ -18,7 +18,7 @@ client = berserk.Client(session=session)
 '''
 
 pygame.display.init()
-with open("/home/flixg/AutoMateChess.txt") as token:
+with open("/home/flixg/AutoMateChess/lichessToken.txt") as token:
     session = berserk.TokenSession(token.readline())
 client = berserk.Client(session=session)
 
