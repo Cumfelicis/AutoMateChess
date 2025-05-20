@@ -15,8 +15,11 @@ from .module import Module
 
 pygame.display.init()
 
+#stockfish = Stockfish(
+#    path="C:/Users/flixg/PycharmProjects/stockfish_15.1_win_x64_avx2/stockfish-windows-2022-x86-64-avx2.exe")
+
 stockfish = Stockfish(
-    path="C:/Users/flixg/PycharmProjects/stockfish_15.1_win_x64_avx2/stockfish-windows-2022-x86-64-avx2.exe")
+    path="~/AutoMateChess/Stockfish/src/stockfish.exe")
 
 '''
 board_1 = pyfirmata.Arduino("COM5")
