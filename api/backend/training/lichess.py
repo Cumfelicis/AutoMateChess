@@ -10,8 +10,15 @@ from ..utils import name_to_board as ntb
 import pyfirmata, pyfirmata.util
 import time
 
+'''
 pygame.display.init()
 with open("C:/Users/flixg/Documents/lichessToken.txt") as token:
+    session = berserk.TokenSession(token.readline())
+client = berserk.Client(session=session)
+'''
+
+pygame.display.init()
+with open("/home/flixg/AutoMateChess.txt") as token:
     session = berserk.TokenSession(token.readline())
 client = berserk.Client(session=session)
 
