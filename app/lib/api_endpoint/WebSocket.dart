@@ -16,7 +16,7 @@ class WebSocket {
   WebSocket() {
     socket.onConnect((_) {
       socket.emit('command', 'connected');
-      Timer.periodic(Duration(seconds: 30), (timer) {
+      Timer.periodic(const Duration(seconds: 30), (timer) {
         if (socket.connected) {
           print('emitted ping');
           socket.emit('ping',

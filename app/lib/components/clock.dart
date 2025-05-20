@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:auto_mate_chess/api_endpoint/WebSocket.dart';
+import 'package:auto_mate_chess/api_endpoint/ble_communication.dart';
 import 'package:auto_mate_chess/components/utils/responsive_text.dart';
 import 'package:flutter/material.dart';
 
@@ -22,7 +22,7 @@ class _ClockState extends State<Clock> {
   late Duration player1Time;
   late Duration player2Time;
   late int incrementSeconds;
-  final webSocket = SOCKET;
+  final webSocket = CONNECTOR.communicator;
   String lastMove = 'test';
 
   Timer? timer;

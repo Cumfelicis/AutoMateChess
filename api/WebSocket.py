@@ -16,7 +16,7 @@ import time
 
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")  # Allow all origins for testing
+socketio = SocketIO(app, cors_allowed_origins="*", path='ws')  # Allow all origins for testing
 logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
     game_queue = Queue()
@@ -133,5 +133,5 @@ def ping(_):
 print(get_challenges())
 if __name__ == '__main__':
     print('test')
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=8000)
     print('running')

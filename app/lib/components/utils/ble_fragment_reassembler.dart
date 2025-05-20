@@ -1,8 +1,15 @@
 import 'dart:convert';
 
+import 'package:auto_mate_chess/api_endpoint/communicator.dart';
+
 class BleMessageReassembler {
   final Map<int, List<int>> _chunks = {};
   int? _expectedChunks;
+  late final _communicator;
+
+  BleMessageReassembler(Communicator communicator) {
+    _communicator = communicator;
+  }
 
   void handleIncomingData(List<int> data) {
     if (data.length < 3) {
@@ -45,6 +52,10 @@ class BleMessageReassembler {
 
     final message = utf8.decode(fullData);
     print("? Full message reassembled: $message");
+    final parts = message.split(';');
+    final command = parts[0];
+    final data = parts[1];
+    _communicator.handleCommand(command, data);
 
     // Reset state for next message
     _chunks.clear();
