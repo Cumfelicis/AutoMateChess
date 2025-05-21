@@ -98,11 +98,15 @@ def run_online_game(queue, config, command_queue):
 def start_websocket_server():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    start_server = websockets.serve(handler, "0.0.0.0", 8080)
-    loop.run_until_complete(start_server)
-    print("WebSocket server running on ws://0.0.0.0:8080")
+
+    async def run():
+        async with websockets.serve(handler, "0.0.0.0", 8080):
+            print("WebSocket server running on ws://0.0.0.0:8080")
+            await asyncio.Future()  # run forever
+
+    loop.run_until_complete(run())
     loop.run_forever()
 
 if __name__ == '__main__':
-    ws_thread = threading.Thread(target=start_websocket_server)
+    ws_thread = threading.Thread(target=start_websocket_server, daemon=True)
     ws_thread.start()
