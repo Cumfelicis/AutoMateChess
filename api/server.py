@@ -24,7 +24,7 @@ connected_clients = set()
 game_queue = Queue()
 command_queue = Queue()
 
-async def handler(websocket, path):
+async def handler(websocket):
     connected_clients.add(websocket)
     try:
         await websocket.send(json.dumps({"msg": "Connected to WebSocket server"}))
