@@ -108,5 +108,5 @@ def start_websocket_server():
     loop.run_forever()
 
 if __name__ == '__main__':
-    ws_thread = threading.Thread(target=start_websocket_server, daemon=True)
+    ws_thread = threading.Thread(target=start_websocket_server)
     ws_thread.start()
