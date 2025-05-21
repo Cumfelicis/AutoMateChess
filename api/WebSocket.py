@@ -133,5 +133,5 @@ def ping(_):
 print(get_challenges())
 if __name__ == '__main__':
     print('test')
-    socketio.run(app, host='0.0.0.0', port=8000)
+    socketio.run(app, host='0.0.0.0', port=8080)
     print('running')
