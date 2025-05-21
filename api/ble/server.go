@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/url"
+	"sync"
 	"time"
 
-	websocketclient "github.com/flixg/automatechess/api/ble/socket"
+	"github.com/gorilla/websocket"
 	"github.com/paypal/gatt"
 	"github.com/paypal/gatt/examples/option"
 )
@@ -15,7 +17,7 @@ const maxChunks = 255
 
 func main() {
 	var notifier gatt.Notifier
-	_, err := websocketclient.NewWebSocketClient("ws://localhost:8080/ws")
+	_, err := NewWebSocketClient("ws://localhost:8080/ws")
 	if err != nil {
 		panic(err)
 	}
@@ -88,6 +90,60 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 		n.Write(chunk)
 		time.Sleep(100 * time.Millisecond)
 	}
+}
+
+type WebSocketclient struct {
+	conn        *websocket.Conn
+	mu          sync.RWMutex
+	lastMessage string
+}
+
+func NewWebSocketClient(rawurl string) (*WebSocketclient, error) {
+	u, err := url.Parse(rawurl)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &WebSocketclient{
+		conn: conn,
+	}
+
+	go client.listen()
+
+	return client, nil
+}
+
+func (c *WebSocketclient) listen() {
+	for {
+
+		_, message, err := c.conn.ReadMessage()
+
+		if err != nil {
+			log.Println("WebSocket read error:", err)
+			return
+		}
+		c.mu.Lock()
+		c.lastMessage = string(message)
+		c.mu.Unlock()
+		log.Println("WebSocket recieved:", c.lastMessage)
+	}
+}
+
+func (c *WebSocketclient) SendMessage(msg string) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.conn.WriteMessage(websocket.TextMessage, []byte(msg))
+}
+
+func (c *WebSocketclient) GetLatest() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.lastMessage
 }
 
 type FragmentBuffer struct {
