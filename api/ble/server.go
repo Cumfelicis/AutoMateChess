@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/url"
+	"sync"
 	"time"
 
-	socketio "github.com/googollee/go-socket.io"
+	"github.com/gorilla/websocket"
 	"github.com/paypal/gatt"
 	"github.com/paypal/gatt/examples/option"
 )
@@ -15,7 +17,7 @@ const maxChunks = 255
 
 func main() {
 	var notifier gatt.Notifier
-	_, err := NewWebSocketClient("http://127.0.0.1:8080")
+	_, err := NewWebSocketClient("ws://0.0.0.0:8080")
 	if err != nil {
 		panic(err)
 	}
@@ -90,23 +92,58 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 	}
 }
 
-func NewWebSocketClient(uri string) (*socketio.Client, error) {
+type WebSocketclient struct {
+	conn        *websocket.Conn
+	mu          sync.RWMutex
+	lastMessage string
+}
 
-	client, err := socketio.NewClient(uri, nil)
-
+func NewWebSocketClient(rawurl string) (*WebSocketclient, error) {
+	u, err := url.Parse(rawurl)
 	if err != nil {
-		fmt.Println("socket connection error", err)
+		return nil, err
 	}
 
-	client.OnEvent("pong", func(s socketio.Conn, msg string) {
-		log.Println("Recieved Message:", msg)
-	})
+	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
-	client.Connect()
-	client.Emit("ping")
-	client.Close()
+	client := &WebSocketclient{
+		conn: conn,
+	}
+
+	go client.listen()
 
 	return client, nil
+}
+
+func (c *WebSocketclient) listen() {
+	for {
+
+		_, message, err := c.conn.ReadMessage()
+
+		if err != nil {
+			log.Println("WebSocket read error:", err)
+			return
+		}
+		c.mu.Lock()
+		c.lastMessage = string(message)
+		c.mu.Unlock()
+		log.Println("WebSocket recieved:", c.lastMessage)
+	}
+}
+
+func (c *WebSocketclient) SendMessage(msg string) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.conn.WriteMessage(websocket.TextMessage, []byte(msg))
+}
+
+func (c *WebSocketclient) GetLatest() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.lastMessage
 }
 
 type FragmentBuffer struct {
