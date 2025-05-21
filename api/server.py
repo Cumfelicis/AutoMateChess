@@ -96,8 +96,8 @@ def run_online_game(queue, config, command_queue):
         queue.put(move)
 
 def start_websocket_server():
-    asyncio.set_event_loop(asyncio.new_event_loop())
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     start_server = websockets.serve(handler, "0.0.0.0", 8080)
     loop.run_until_complete(start_server)
     print("WebSocket server running on ws://0.0.0.0:8080")
