@@ -92,7 +92,11 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 
 func NewWebSocketClient(uri string) (*socketio.Client, error) {
 
-	client, _ := socketio.NewClient(uri, nil)
+	client, err := socketio.NewClient(uri, nil)
+
+	if err != nil {
+		fmt.Println("socket connection error", err)
+	}
 
 	client.OnEvent("pong", func(s socketio.Conn, msg string) {
 		log.Println("Recieved Message:", msg)
