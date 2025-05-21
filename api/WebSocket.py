@@ -16,7 +16,7 @@ import time
 
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*", path='socket.io')  # Allow all origins for testing
+socketio = SocketIO(app, cors_allowed_origins="*", path='socket.io', async_mode='threading')  # Allow all origins for testing
 logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
     game_queue = Queue()
