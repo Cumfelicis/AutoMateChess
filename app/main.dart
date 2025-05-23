@@ -19,7 +19,6 @@ void main() async {
   await connector.startScanning();
   print('test3');
   await connector.onReady;
-  connector.sendData('161');
   print('test2');
 
   ByteData data =
