@@ -50,10 +50,13 @@ func main() {
 			char.HandleNotifyFunc(func(r gatt.Request, n gatt.Notifier) {
 				notifier = n
 				client.SetNotifier(n)
-				for !n.Done() {
-					time.Sleep(time.Second * 10)
-					sendFragmentedMessage(notifier, jsonify("msg", "Periodic server message"))
-				}
+
+				go func(n gatt.Notifier) {
+					for !n.Done() {
+						time.Sleep(time.Second * 10)
+						sendFragmentedMessage(n, jsonify("msg", "Periodic server message"))
+					}
+				}(n)
 			})
 			// Add and advertise
 			d.AddService(svc)
