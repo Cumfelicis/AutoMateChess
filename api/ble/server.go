@@ -43,7 +43,7 @@ func main() {
 			char.HandleWrite(gatt.WriteHandlerFunc(func(r gatt.Request, data []byte) (status byte) {
 				handleWriteFragmented(r, data)
 				if notifier != nil {
-					sendFragmentedMessage(notifier, jsonify("Ack", "Ack: "+string(data))
+					sendFragmentedMessage(notifier, jsonify("Ack", "Ack: "+string(data)))
 				}
 				return gatt.StatusSuccess
 			}))
