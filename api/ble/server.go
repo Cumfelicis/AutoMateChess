@@ -19,7 +19,6 @@ const maxChunks = 255
 func main() {
 	var notifier gatt.Notifier
 	client, err := NewWebSocketClient("ws://0.0.0.0:8080")
-	client.SetNotifier(notifier)
 	go client.listen()
 	if err != nil {
 		panic(err)
@@ -50,6 +49,7 @@ func main() {
 				return gatt.StatusSuccess
 			}))
 			char.HandleNotifyFunc(func(r gatt.Request, n gatt.Notifier) {
+				client.SetNotifier(n)
 				go func(n gatt.Notifier) {
 					fmt.Println("Notifier goroutine started")
 					for {
