@@ -29,7 +29,7 @@ async def handler(websocket):
     try:
         await websocket.send(json.dumps({"event": "connect", "msg": "Connected to WebSocket server"}))
         async for message in websocket:
-            data = json.loads(message)
+            data = json.loads(message.decode("utf-8"))
             event = data.get("event")
             payload = data.get("data")
             print(f'recieved event: {event} with payload: {payload}')
