@@ -51,12 +51,18 @@ func main() {
 				notifier = n
 				client.SetNotifier(n)
 
-				go func(n gatt.Notifier) {
-					for !n.Done() {
-						time.Sleep(time.Second * 10)
+				go func() {
+					fmt.Println("Notifier goroutine started")
+					for {
+						if n.Done() {
+							fmt.Println("Notifier is done. Exiting loop.")
+							break
+						}
+						fmt.Println("Sending periodic message...")
 						sendFragmentedMessage(n, jsonify("msg", "Periodic server message"))
+						time.Sleep(10 * time.Second)
 					}
-				}(n)
+				}()
 			})
 			// Add and advertise
 			d.AddService(svc)
