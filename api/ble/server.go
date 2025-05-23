@@ -48,10 +48,7 @@ func main() {
 				return gatt.StatusSuccess
 			}))
 			char.HandleNotifyFunc(func(r gatt.Request, n gatt.Notifier) {
-				notifier = n
-				client.SetNotifier(n)
-
-				go func() {
+				go func(n gatt.Notifier) {
 					fmt.Println("Notifier goroutine started")
 					for {
 						if n.Done() {
@@ -62,7 +59,8 @@ func main() {
 						sendFragmentedMessage(n, jsonify("msg", "Periodic server message"))
 						time.Sleep(10 * time.Second)
 					}
-				}()
+				}(n)
+
 			})
 			// Add and advertise
 			d.AddService(svc)
@@ -96,9 +94,7 @@ func jsonify(command string, data interface{}) string {
 
 func sendFragmentedMessage(n gatt.Notifier, message string) {
 	data := []byte(message)
-	fmt.Println("data: " + string(data))
-	const maxPayload = 17
-	const maxChunks = 255
+	fmt.Println("Fragmented send of:", message)
 
 	totalChunks := byte(len(data)/maxPayload) + 1
 	if totalChunks > maxChunks {
@@ -107,6 +103,10 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 	}
 
 	for i := byte(0); i < totalChunks; i++ {
+		if n.Done() {
+			fmt.Println("Notifier done during send. Aborting.")
+			return
+		}
 		start := int(i) * maxPayload
 		end := start + maxPayload
 		if end > len(data) {
@@ -118,8 +118,12 @@ func sendFragmentedMessage(n gatt.Notifier, message string) {
 		chunk[1] = totalChunks
 		chunk[2] = byte(len(payload))
 		copy(chunk[3:], payload)
-		n.Write(chunk)
-		time.Sleep(100 * time.Millisecond)
+
+		_, err := n.Write(chunk)
+		if err != nil {
+			fmt.Println("Write error:", err)
+			return
+		}
 	}
 }
 
