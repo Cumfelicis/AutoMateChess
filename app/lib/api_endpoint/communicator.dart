@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:auto_mate_chess/api_endpoint/ble_communication.dart';
+import '/api_endpoint/ble_communication.dart';
 
 class Communicator {
   dynamic challenges;

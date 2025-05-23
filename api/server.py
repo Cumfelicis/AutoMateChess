@@ -32,6 +32,7 @@ async def handler(websocket):
             data = json.loads(message)
             event = data.get("event")
             payload = data.get("data")
+            print(f'recieved event: {event} with payload: {payload}')
 
             if event == "ping":
                 await websocket.send(json.dumps({"event": "pong", "data": "pong"}))

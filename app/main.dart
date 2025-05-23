@@ -10,7 +10,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'lib/components/home_page/home_page.dart';
 import 'package:http/http.dart';
 import 'package:hive/hive.dart';
-import 'lib/api_endpoint/ble_communication.dart';
+import 'package:auto_mate_chess/api_endpoint/ble_communication.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
