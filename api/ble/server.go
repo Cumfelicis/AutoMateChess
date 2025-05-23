@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/url"
@@ -42,7 +43,7 @@ func main() {
 			char.HandleWrite(gatt.WriteHandlerFunc(func(r gatt.Request, data []byte) (status byte) {
 				handleWriteFragmented(r, data)
 				if notifier != nil {
-					sendFragmentedMessage(notifier, "Ack: "+string(data))
+					sendFragmentedMessage(notifier, jsonify("Ack", "Ack: "+string(data))
 				}
 				return gatt.StatusSuccess
 			}))
@@ -51,7 +52,7 @@ func main() {
 				client.SetNotifier(n)
 				for !n.Done() {
 					time.Sleep(time.Second * 10)
-					sendFragmentedMessage(notifier, "Periodic server Message")
+					sendFragmentedMessage(notifier, jsonify("msg", "Periodic server message"))
 				}
 			})
 			// Add and advertise
@@ -62,6 +63,25 @@ func main() {
 
 	d.Init(onStateChanged)
 	select {}
+}
+
+type Message struct {
+	Event string      `json:"event"`
+	Data  interface{} `json:"data"`
+}
+
+func jsonify(command string, data interface{}) string {
+	msg := Message{
+		Event: command,
+		Data:  data,
+	}
+
+	jsonBytes, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+	jsonString := string(jsonBytes)
+	return jsonString
 }
 
 func sendFragmentedMessage(n gatt.Notifier, message string) {
