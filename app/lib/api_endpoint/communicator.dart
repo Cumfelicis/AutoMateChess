@@ -38,7 +38,7 @@ class Communicator {
   }
 
   String formatData(String command, dynamic data) {
-    return jsonEncode({"event": "command", "data": jsonEncode(data)});
+    return jsonEncode({"event": command, "data": jsonEncode(data)});
   }
 
   void startGame(Map config) {
