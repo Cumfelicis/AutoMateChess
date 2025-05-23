@@ -64,6 +64,7 @@ class Communicator {
 
   void handleCommand(command, data) {
     try {
+      emit("ack", data);
       on[command](command, data);
     } catch (e) {
       print('undefined command');
