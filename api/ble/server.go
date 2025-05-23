@@ -174,10 +174,11 @@ func (c *WebSocketclient) listen() {
 		n := c.notifier
 		c.mu.Unlock()
 		log.Println("WebSocket recieved:", c.lastMessage)
-
 		if n != nil {
 			log.Println("redirecting")
 			sendFragmentedMessage(n, jsonify("ack", c.lastMessage))
+		} else {
+			print(n)
 		}
 	}
 }
