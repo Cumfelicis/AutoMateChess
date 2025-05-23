@@ -19,6 +19,8 @@ const maxChunks = 255
 func main() {
 	var notifier gatt.Notifier
 	client, err := NewWebSocketClient("ws://0.0.0.0:8080")
+	client.SetNotifier(notifier)
+	go client.listen()
 	if err != nil {
 		panic(err)
 	}
@@ -148,8 +150,6 @@ func NewWebSocketClient(rawurl string) (*WebSocketclient, error) {
 	client := &WebSocketclient{
 		conn: conn,
 	}
-
-	go client.listen()
 
 	return client, nil
 }
