@@ -41,7 +41,7 @@ func main() {
 			// Writable Characteristic
 			char := svc.AddCharacteristic(gatt.MustParseUUID("abcd"))
 			char.HandleWrite(gatt.WriteHandlerFunc(func(r gatt.Request, data []byte) (status byte) {
-				handleWriteFragmented(r, data)
+				handleWriteFragmented(r, data, client)
 				if notifier != nil {
 					sendFragmentedMessage(notifier, jsonify("Ack", "Ack: "+string(client.lastMessage)))
 				}
@@ -201,7 +201,7 @@ type FragmentBuffer struct {
 
 var fragmentMap = make(map[string]*FragmentBuffer)
 
-func handleWriteFragmented(r gatt.Request, data []byte) byte {
+func handleWriteFragmented(r gatt.Request, data []byte, c *WebSocketclient) byte {
 	if len(data) < 3 {
 		fmt.Println("Invalid fragment")
 		return gatt.StatusUnexpectedError
@@ -241,6 +241,7 @@ func handleWriteFragmented(r gatt.Request, data []byte) byte {
 			fullMessage = append(fullMessage, buf.buffers[i]...)
 		}
 		fmt.Println("Reassembled message:", string(fullMessage))
+		c.lastMessage = string(fullMessage)
 		delete(fragmentMap, clientID)
 	}
 
