@@ -158,6 +158,7 @@ func (c *WebSocketclient) SetNotifier(n gatt.Notifier) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.notifier = n
+	log.Println(c.notifier)
 }
 
 func (c *WebSocketclient) listen() {
