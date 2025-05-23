@@ -241,7 +241,7 @@ func handleWriteFragmented(r gatt.Request, data []byte, c *WebSocketclient) byte
 			fullMessage = append(fullMessage, buf.buffers[i]...)
 		}
 		fmt.Println("Reassembled message:", string(fullMessage))
-		c.lastMessage = string(fullMessage)
+		c.SendMessage(string(fullMessage))
 		delete(fragmentMap, clientID)
 	}
 
