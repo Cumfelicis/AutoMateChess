@@ -27,7 +27,7 @@ command_queue = Queue()
 async def handler(websocket):
     connected_clients.add(websocket)
     try:
-        await websocket.send(json.dumps({"msg": "Connected to WebSocket server"}))
+        await websocket.send(json.dumps({"event": "connect", "msg": "Connected to WebSocket server"}))
         async for message in websocket:
             data = json.loads(message)
             event = data.get("event")

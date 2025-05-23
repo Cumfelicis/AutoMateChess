@@ -13,6 +13,9 @@ class Communicator {
 
   Communicator(BLE_Connector connector) {
     _connector = connector;
+    on['connect'] = (_) {
+      print('connect');
+    };
     on['disconnect'] = (_) {
       print('disconnected');
     };
@@ -35,7 +38,7 @@ class Communicator {
   }
 
   String formatData(String command, dynamic data) {
-    return '$command/${jsonEncode(data)}';
+    return jsonEncode({"event": "command", "data": jsonEncode(data)});
   }
 
   void startGame(Map config) {

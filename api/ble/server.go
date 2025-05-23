@@ -17,7 +17,7 @@ const maxChunks = 255
 
 func main() {
 	var notifier gatt.Notifier
-	_, err := NewWebSocketClient("ws://0.0.0.0:8080")
+	client, err := NewWebSocketClient("ws://0.0.0.0:8080")
 	if err != nil {
 		panic(err)
 	}
@@ -48,6 +48,7 @@ func main() {
 			}))
 			char.HandleNotifyFunc(func(r gatt.Request, n gatt.Notifier) {
 				notifier = n
+				client.SetNotifier(n)
 				for !n.Done() {
 					time.Sleep(time.Second * 10)
 					sendFragmentedMessage(notifier, "Periodic server Message")
@@ -96,6 +97,7 @@ type WebSocketclient struct {
 	conn        *websocket.Conn
 	mu          sync.RWMutex
 	lastMessage string
+	notifier    gatt.Notifier
 }
 
 func NewWebSocketClient(rawurl string) (*WebSocketclient, error) {
@@ -118,6 +120,12 @@ func NewWebSocketClient(rawurl string) (*WebSocketclient, error) {
 	return client, nil
 }
 
+func (c *WebSocketclient) SetNotifier(n gatt.Notifier) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.notifier = n
+}
+
 func (c *WebSocketclient) listen() {
 	for {
 
@@ -129,8 +137,13 @@ func (c *WebSocketclient) listen() {
 		}
 		c.mu.Lock()
 		c.lastMessage = string(message)
+		n := c.notifier
 		c.mu.Unlock()
 		log.Println("WebSocket recieved:", c.lastMessage)
+
+		if n != nil {
+			sendFragmentedMessage(n, c.lastMessage)
+		}
 	}
 }
 
