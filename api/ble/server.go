@@ -81,6 +81,7 @@ func jsonify(command string, data interface{}) string {
 		panic(err)
 	}
 	jsonString := string(jsonBytes)
+	fmt.Println("json:" + jsonString)
 	return jsonString
 }
 
