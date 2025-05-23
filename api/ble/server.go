@@ -176,6 +176,7 @@ func (c *WebSocketclient) listen() {
 		log.Println("WebSocket recieved:", c.lastMessage)
 
 		if n != nil {
+			log.Println("redirecting")
 			sendFragmentedMessage(n, c.lastMessage)
 		}
 	}
