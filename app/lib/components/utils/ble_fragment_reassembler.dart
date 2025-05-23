@@ -50,12 +50,9 @@ class BleMessageReassembler {
       fullData.addAll(chunk);
     }
 
-    final message = utf8.decode(fullData);
+    final message = jsonDecode(utf8.decode(fullData));
     print("? Full message reassembled: $message");
-    final parts = message.split(';');
-    final command = parts[0];
-    final data = parts[1];
-    _communicator.handleCommand(command, data);
+    _communicator.handleCommand(message["event"], message["data"]);
 
     // Reset state for next message
     _chunks.clear();
