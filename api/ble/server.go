@@ -172,6 +172,7 @@ func (c *WebSocketclient) listen() {
 		c.mu.Lock()
 		c.lastMessage = string(message)
 		n := c.notifier
+		log.Println("WebSocket recieved:", n)
 		c.mu.Unlock()
 		log.Println("WebSocket recieved:", c.lastMessage)
 		if n != nil {
