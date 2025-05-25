@@ -46,8 +46,36 @@ class Communicator {
     emit('start_game', config);
   }
 
+  void moveStepperX(pos) {
+    emit("move_stepper_x", pos);
+  }
+
+  void moveStepperY(pos) {
+    emit("move_stepper_y", pos);
+  }
+
+  void moveMultistepper(posX, posY) {
+    emit("move_multistepper", (posX, posY));
+  }
+
+  void runStepperX() {
+    emit("run_stepper_x", null);
+  }
+
+  void runStepperY() {
+    emit("run_stepper_y", null);
+  }
+
+  void runMultistepper() {
+    emit("run_multistepper", null);
+  }
+
   void startStream() {
     emit('start_stream', null);
+  }
+
+  void calibrateArray() {
+    emit("calibrate_array", null);
   }
 
   void checkForMove() {

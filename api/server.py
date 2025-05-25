@@ -48,6 +48,21 @@ async def handler(websocket):
                 command_queue.put("check")
             elif event == "start_stream":
                 asyncio.create_task(stream_updates(websocket))
+            elif event == "move_stepper_x":
+                start_move_stepper_x(int(payload))
+            elif event == "run_stepper_x":
+                start_run_stepper_x()
+            elif event == "move_stepper_y":
+                start_move_stepper_y(int(payload))
+            elif event == "run_stepper_y":
+                start_run_stepper_y()
+            elif event == "move_multistepper":
+                pos = tuple(payload)
+                start_move_multistepper(pos[0], pos[1])
+            elif event == "run_multistepper":
+                start_run_multistepper()
+            elif event == "calibrate_array":
+                start_calibrate_array()
             elif event == "challenges":
                 challenges = client.challenges.get_mine()["in"]
                 await websocket.send(json.dumps({"event": "challenges", "data": challenges}))
@@ -70,24 +85,29 @@ def start_stockfish(config):
 def start_lichess(config):
     p = Process(target=run_online_game, args=(game_queue, config, command_queue))
     p.start()
-
-def run_game_against_stockfish(queue, config, command_queue):
-    board_1 = pyfirmata.Arduino("COM7")
-    board_2 = pyfirmata.ArduinoMega("COM10")
-    it = pyfirmata.util.Iterator(board_2)
+    
+def initialize_components():
+    BOARD_1 = pyfirmata.Arduino("COM7")
+    BOARD_1 = pyfirmata.ArduinoMega("COM10")
+    it = pyfirmata.util.Iterator(BOARD_2)
     it.start()
     time.sleep(1)
 
-    array = Array(board_2, 23)
-    stepper_x = Stepper(5, 2, True, board=board_1, board_2=board_2, reference_pin=0, alternative_reference_pin=1)
-    stepper_y = Stepper(6, 3, False, board=board_1, board_2=board_2, reference_pin=2)
-    magnet = Magnet(board_2, 2, 3, 4)
-    magnet.off()
+    ARRAY = Array(BOARD_2, 23)
+    STEPPER_X = Stepper(5, 2, True, board=BOARD_1, board_2=BOARD_2, reference_pin=0, alternative_reference_pin=1)
+    STEPPER_Y = Stepper(6, 3, False, board=BOARD_1, board_2=BOARD_2, reference_pin=2)
+    MAGNET = Magnet(BOARD_2, 2, 3, 4)
+    MAGNET.off()
 
-    multistepper = Multistepper()
+    MULTISTEPPER = Multistepper()
+    MULTISTEPPER.add_stepper(STEPPER_X)
+    MULTISTEPPER.add_stepper(STEPPER_Y)
+    return BOARD_1, BOARD_2, STEPPER_X, STEPPER_Y, MULTISTEPPER, ARRAY, MAGNET
+
+def run_game_against_stockfish(queue, config, command_queue):
     game = Stockfish(real=True, fen=config["fen"], time=config["starting_time"], increment=config["increment"],
-                     command_queue=command_queue, stepper_x=stepper_x, stepper_y=stepper_y,
-                     multistepper=multistepper, magnet=magnet, array=array)
+                     command_queue=command_queue, stepper_x=STEPPER_X, stepper_y=STEPPER_Y,
+                     multistepper=MULTISTEPPER, magnet=MAGNET, array=ARRAY)
 
     for move in game.loop():
         queue.put(move)
@@ -97,6 +117,61 @@ def run_online_game(queue, config, command_queue):
                    challenge_id=config["challenge_id"])
     for move in game.loop():
         queue.put(move)
+        
+def move_stepper_x(pos):
+    STEPPER_X.move_to(pos)
+    STEPPER_X.run_to()
+    
+def run_stepper_x():
+    STEPPER_X.run_to()   
+    
+def move_multistepper(pos_x, pos_y):
+    STEPPER_X.move_to(pos_x)
+    STEPPER_Y.move_to(pos_y)
+    MULTISTEPPER.run_to() 
+    
+def run_multistepper():
+    MULTISTEPPER.run_to() 
+    
+def move_stepper_y(pos):
+    STEPPER_Y.move_to(pos)
+    STEPPER_Y.run_to()
+    
+def run_stepper_y():
+    STEPPER_Y.run_to()    
+    
+def start_move_stepper_x(pos):
+    p = Process(target=move_stepper_x, args=(pos))
+    p.start
+    
+def start_run_stepper_x():
+    p = Process(target=run_stepper_x)
+    p.start  
+    
+def start_move_stepper_y(pos):
+    p = Process(target=move_stepper_y, args=(pos))
+    p.start
+    
+def start_run_stepper_y():
+    p = Process(target=run_stepper_y)
+    p.start
+        
+def start_move_multistepper(pos_x, pos_y):
+    p = Process(target=move_multistepper, args=(pos_x, pos_y))
+    p.start()
+    
+def start_run_multistepper():
+    p = Process(target=run_multistepper)
+    p.start()
+        
+  
+    
+def calibrate_array():
+    ARRAY.calibrate()
+    
+def start_calibrate_array():
+    p = Process(target=calibrate_array)
+    p.start
 
 def start_websocket_server():
     loop = asyncio.new_event_loop()
@@ -111,5 +186,6 @@ def start_websocket_server():
     loop.run_forever()
 
 if __name__ == '__main__':
+    BOARD_1, BOARD_2, STEPPER_X, STEPPER_Y, MULTISTEPPER, ARRAY, MAGNET = initialize_components()
     ws_thread = threading.Thread(target=start_websocket_server)
     ws_thread.start()
