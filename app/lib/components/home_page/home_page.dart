@@ -1,5 +1,6 @@
 import 'package:auto_mate_chess/components/commons/chess_board/board.dart';
 import 'package:auto_mate_chess/components/online/lichess.dart';
+import 'package:auto_mate_chess/components/settings_page/settings_page.dart';
 import 'package:flutter/material.dart';
 import '../computer/computer.dart';
 import '../../constants/tint.dart';
@@ -25,7 +26,7 @@ class _HomePageState extends State<HomePage> {
             BottomNavigationBarItem(
                 icon: Icon(Icons.psychology), label: 'computer'),
             BottomNavigationBarItem(
-                icon: Icon(Icons.calculate), label: 'training')
+                icon: Icon(Icons.settings), label: 'settings')
           ],
           currentIndex: navBarIndex,
           onTap: (value) => setState(() {
@@ -37,9 +38,7 @@ class _HomePageState extends State<HomePage> {
             : navBarIndex == 1
                 ? const Computer()
                 : navBarIndex == 2
-                    ? Container(
-                        color: Colors.black,
-                      )
+                    ? const SettingsPage()
                     : Container());
   }
 }

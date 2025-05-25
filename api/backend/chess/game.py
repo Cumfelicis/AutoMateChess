@@ -33,8 +33,6 @@ class Board:
             self.multistepper = multistepper
             self.stepper_x.reference()
             self.stepper_y.reference()
-            multistepper.add_stepper(self.stepper_x)
-            multistepper.add_stepper(self.stepper_y)
             self.magnet = magnet
         self.white_pieces = ["K", "Q", "R", "B", "N", "P"]  # a list of Piece names/Id's to check which color a piece is
         self.black_pieces = ["k", "q", "r", "b", "n", "p"]
