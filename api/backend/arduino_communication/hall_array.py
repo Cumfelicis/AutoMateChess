@@ -92,6 +92,7 @@ class Array:
 
 
     def get_position(self):
+        print("this also")
         self.en_pin.write(1)
         time.sleep(0.5)
         pos = [[0 for _ in range(8)] for _ in range(8)]
