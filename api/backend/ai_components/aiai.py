@@ -3,8 +3,8 @@ from keras.models import model_from_json
 import matplotlib.pyplot as plt
 from keras.layers import Conv2D, MaxPooling2D, Dense, Input, Flatten
 import numpy as np
-from ..ai_components.load_training_data import load_data
-from ..ai_components.pipe_extract import encode_chessboard
+from .load_training_data import load_data
+from .pipe_extract import encode_chessboard
 
 BATCH_SIZE = 1000
 NUM_EPOCHS = 5
