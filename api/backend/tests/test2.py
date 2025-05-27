@@ -98,7 +98,7 @@ while True:
     stepper_x.run_to()
     magnet.on(False)
     time.sleep(1)
-'''
+
 
 '''
 stepper_y.move_to(50 + 7 * 1260)
