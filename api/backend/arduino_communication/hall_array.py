@@ -76,6 +76,7 @@ class Array:
             pin.write(int(bin_sensor[x]))
         time.sleep(0.04)
         state = sensor_array.get_state()
+        print(state)
         return state
     
     def get_zero_values(self):
