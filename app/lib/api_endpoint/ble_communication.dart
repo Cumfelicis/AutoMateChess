@@ -94,6 +94,7 @@ class BLE_Connector {
   }
 
   Future<void> sendFragmentedMessage(String message) async {
+    print("message:" + message);
     final data = utf8.encode(message);
     const maxPayload = 17; // 20 - 3 bytes for metadata
     final totalChunks = (data.length / maxPayload).ceil();
@@ -114,7 +115,7 @@ class BLE_Connector {
         payload.length & 0xFF, // payload length (1 byte)
         ...payload
       ];
-      print(chunk);
+      print(utf8.decode(chunk));
 
       await _ble.writeCharacteristicWithoutResponse(
           QualifiedCharacteristic(

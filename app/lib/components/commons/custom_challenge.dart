@@ -311,7 +311,7 @@ class _CustomChallengeState extends State<CustomChallenge> {
                 StandardFab(
                   herotag: 'start_game',
                   backgroundColor: Tint.primary,
-                  onPressed: () {
+                  onPressed: () async {
                     print(startingPosition);
                     socket.startGame(createGameConfig(
                         true,
@@ -320,6 +320,7 @@ class _CustomChallengeState extends State<CustomChallenge> {
                         onTime,
                         selectedTime.toInt(),
                         selectedIncrement.toInt()));
+                    await Future.delayed(const Duration(milliseconds: 1000));
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => Clock(
