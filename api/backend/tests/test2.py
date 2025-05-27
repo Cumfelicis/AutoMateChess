@@ -11,9 +11,9 @@ it = pyfirmata.util.Iterator(board_2)
 it.start()
 time.sleep(1)
 
-stepper_y = Stepper(5, 2, True, board=board_1, board_2=board_2, reference_pin=7, alternative_reference_pin=6)
-stepper_x = Stepper(6, 3, False, board=board_1, board_2=board_2, reference_pin=5)
-magnet = Magnet(board_2, 8, 7, 6)
+stepper_x = Stepper(5, 2, True, board=board_1, board_2=board_2, reference_pin=7, alternative_reference_pin=6)
+stepper_y = Stepper(6, 3, False, board=board_1, board_2=board_2, reference_pin=5)
+magnet = Magnet(board_2, 8, 9, 10)
 magnet.off()
 magnet.on(False)
 multistepper = Multistepper()
@@ -74,7 +74,7 @@ while True:
 #stepper_x.reference()
 #stepper_y.reference()
 
-'''
+
 while True:
     stepper_x.reference()
     magnet.on(True)
@@ -118,10 +118,11 @@ while True:
     stepper_y.reference() 
 '''
 
-
+'''
 while True:
     print(array.get_position())
     time.sleep(1)
+'''
 
 
 
