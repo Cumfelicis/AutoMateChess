@@ -52,7 +52,7 @@ class Array:
             # self.en_pin.write(0)
             pass
 
-        self.signal_pins = [[52, 50, 48, 46], [44, 42, 40, 38], [36, 34, 32, 30], [28, 26, 24, 22]]
+        self.signal_pins = [[46, 48, 50, 52], [38, 40, 42, 44], [30, 32, 34, 36], [22, 24, 26, 28]]
         for x, pins in enumerate(self.signal_pins):
             for y, pin in enumerate(pins):
                 self.signal_pins[x][y] = self.board.get_pin(f"d:{pin}:o")
