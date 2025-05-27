@@ -38,7 +38,7 @@ time.sleep(1)
 class Play(Module):
     def __init__(self, fen, time, increment, command_queue, stepper_x=False, stepper_y=False, magnet=False, real=False, multistepper=False, array=False):
         self.window = pygame.display.set_mode((1536, 810), pygame.RESIZABLE)
-        self.strength = 25  # input("input stockfish strength: ")
+        self.strength = 15  # input("input stockfish strength: ")
         self.colour = "white"  # input("input colour: ")
         stockfish.set_skill_level(int(self.strength))
         current_dir = Path(__file__).parent
