@@ -9,7 +9,6 @@ class AnalogReader:
 
     def get_state(self):
         values = [self.pin.read() for _ in range(10)]
-        print(values)
         return sum(values) / len(values) if values else None
 
 
