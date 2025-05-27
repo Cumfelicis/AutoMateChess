@@ -88,7 +88,7 @@ def start_lichess(config):
     
 def initialize_components():
     BOARD_1 = pyfirmata.Arduino("/dev/ttyACM1")
-    BOARD_1 = pyfirmata.ArduinoMega("/dev/ttyACM0")
+    BOARD_2 = pyfirmata.ArduinoMega("/dev/ttyACM0")
     it = pyfirmata.util.Iterator(BOARD_2)
     it.start()
     time.sleep(1)
