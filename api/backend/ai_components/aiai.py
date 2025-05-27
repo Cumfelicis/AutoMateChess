@@ -1,6 +1,4 @@
-import tensorflow as tf
-print((tf.__file__))
-from tensorflow import keras
+from tensorflow.keras import models, layers
 
 from keras.models import model_from_json
 import matplotlib.pyplot as plt
@@ -26,8 +24,7 @@ PIECE_MAPPING = {
     "Q": 10,
     "K": 11}  # channel of the Pieces
 
-models = keras.models
-layers = keras.layers
+
 # Board representation CNN
 def build_cnn_model():
     model = models.Sequential()
