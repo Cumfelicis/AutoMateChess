@@ -1,5 +1,4 @@
-
-from tensorflow.keras import layers, models
+from keras import models, layers
 from keras.models import model_from_json
 import matplotlib.pyplot as plt
 from keras.layers import Conv2D, MaxPooling2D, Dense, Input, Flatten
