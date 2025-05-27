@@ -57,6 +57,8 @@ class Play(Module):
             self.colour = True
         else:
             self.colour = False
+            
+        print("still alive")
         self.game = g.Game(self.window, stepper_x=stepper_x, stepper_y=stepper_y, magnet=magnet, real_game=real, multistepper=multistepper, array=array)
         print("test")
         self.button = Button(200, 1000, 100, 100, self.window, "exit")
