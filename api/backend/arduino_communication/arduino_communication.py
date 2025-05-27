@@ -37,6 +37,8 @@ class Magnet:
     def __init__(self, board, relais_1, relais_2, relais_3):
         self.relais_1 = board.get_pin(f"d:{relais_1}:o")
         self.relais_2 = board.get_pin(f"d:{relais_2}:o")
+        self.relais_2.write(1)
+        time.sleep(1)
         self.relais_3 = board.get_pin(f"d:{relais_3}:o")
 
     def on(self, polarity):
