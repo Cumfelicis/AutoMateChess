@@ -9,7 +9,7 @@ from ..arduino_communication import *
 import pyfirmata
 import time
 import numpy as np
-from ..ai_components.ai import load_model, predict
+from ..ai_components.aiai import load_model, predict
 from pathlib import Path
 from .module import Module
 
