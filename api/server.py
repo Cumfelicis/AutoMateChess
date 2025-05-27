@@ -38,14 +38,18 @@ async def handler(websocket):
             if event == "ping":
                 await websocket.send(json.dumps({"event": "pong", "data": "pong"}))
             elif event == "start_game":
+                print("starting game")
                 start_stockfish(payload)
                 await websocket.send(json.dumps({"event": "status", "data": "Game Started"}))
             elif event == "start_lichess":
+                print("starting lichess")
                 start_lichess(payload)
                 await websocket.send(json.dumps({"event": "status", "data": "Game Started"}))
             elif event == "check":
+                print("checking")
                 command_queue.put("check")
             elif event == "start_stream":
+                print("starting stream")
                 asyncio.create_task(stream_updates(websocket))
             elif event == "move_stepper_x":
                 start_move_stepper_x(int(payload))
@@ -61,6 +65,7 @@ async def handler(websocket):
             elif event == "run_multistepper":
                 start_run_multistepper()
             elif event == "calibrate_array":
+                print("calibrating")
                 start_calibrate_array()
             elif event == "challenges":
                 challenges = client.challenges.get_mine()["in"]
