@@ -40,7 +40,7 @@ class Play(Module):
         self.window = pygame.display.set_mode((1536, 810), pygame.RESIZABLE)
         self.strength = 15  # input("input stockfish strength: ")
         self.colour = "white"  # input("input colour: ")
-        stockfish.set_skill_level(int(self.strength))
+        # stockfish.set_skill_level(int(self.strength))
         current_dir = Path(__file__).parent
         architecture_path = current_dir / '../ai_components/architecture234.json'
         architecture_path = architecture_path.resolve()
