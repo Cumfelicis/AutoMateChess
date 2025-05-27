@@ -7,6 +7,7 @@ import time
 from multiprocessing import Process, Queue
 from flask import Flask, jsonify
 from flask_cors import CORS
+import traceback
 
 from .backend.training.play_against_stockfish import Play as Stockfish
 from .backend.training.lichess import client
@@ -109,11 +110,16 @@ def initialize_components():
     return BOARD_1, BOARD_2, STEPPER_X, STEPPER_Y, MULTISTEPPER, ARRAY, MAGNET
 
 def run_game_against_stockfish(queue, config, command_queue):
-    config = json.loads(config)
-    print("i am alive")
-    game = Stockfish(real=True, fen=config["fen"], time=config["starting_time"], increment=config["increment"],
-                     command_queue=command_queue, stepper_x=STEPPER_X, stepper_y=STEPPER_Y,
-                     multistepper=MULTISTEPPER, magnet=MAGNET, array=ARRAY)
+    try:
+        config = json.loads(config)
+        print("i am alive")
+        game = Stockfish(real=True, fen=config["fen"], time=config["starting_time"], increment=config["increment"],
+                        command_queue=command_queue, stepper_x=STEPPER_X, stepper_y=STEPPER_Y,
+                        multistepper=MULTISTEPPER, magnet=MAGNET, array=ARRAY)
+    except Exception as e:
+        print("subprocces crashed")   
+        traceback.print_exc()
+    
 
     for move in game.loop():
         queue.put(move)
