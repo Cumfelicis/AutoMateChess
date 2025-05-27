@@ -47,12 +47,12 @@ class Magnet:
         
     def test(self):
         self.relais_1.write(1)
-        self.relais_3.write(0)
-        self.relais_2.write(1)
+        self.relais_3.write(1)
+        self.relais_2.write(0)
 
     def off(self):
         print('start-off')
-        self.relais_1.write(1)
+        self.relais_1.write(0)
         time.sleep(1)
         self.relais_2.write(1)
         print('off')
