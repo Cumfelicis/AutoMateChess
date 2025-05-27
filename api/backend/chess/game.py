@@ -977,15 +977,20 @@ class Game:
         print('game')
         self.array.get_position()
         self.clock = py.time.Clock()
+        print("before")
         board_pos = config['STEPPER_STARTING_POS']
         self.sim_board = Board(None, True, board_pos[0], board_pos[1], self.window, real_board=False)
+        print("beetwen")
         self.simulation = Simulation(self.window, self.sim_board, Mouse(self.sim_board), self.clock)
+        print("after")
         self.board = Board(None, True, board_pos[0], board_pos[1], self.window, stepper_x=stepper_x,
                            stepper_y=stepper_y, multistepper=multistepper,
                            magnet=magnet,
                            real_board=real_game)
+        print("after board")
 
         self.mouse = Mouse(self.board)
+        print("done")
 
     def game_loop(self):
         pygame.display.set_caption("Chess")
