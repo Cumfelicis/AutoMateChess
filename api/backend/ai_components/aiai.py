@@ -1,4 +1,5 @@
-from keras import models, layers
+from tensorflow import keras
+
 from keras.models import model_from_json
 import matplotlib.pyplot as plt
 from keras.layers import Conv2D, MaxPooling2D, Dense, Input, Flatten
@@ -23,7 +24,8 @@ PIECE_MAPPING = {
     "Q": 10,
     "K": 11}  # channel of the Pieces
 
-
+models = keras.models
+layers = keras.layers
 # Board representation CNN
 def build_cnn_model():
     model = models.Sequential()
