@@ -46,7 +46,7 @@ class Magnet:
         self.set_polarity(polarity)
         
     def test(self):
-        self.relais_1.write(1)
+        self.relais_1.write(0)
         self.relais_3.write(1)
         self.relais_2.write(0)
 
