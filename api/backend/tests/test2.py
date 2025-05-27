@@ -74,7 +74,7 @@ while True:
 #stepper_x.reference()
 #stepper_y.reference()
 
-
+'''
 while True:
     stepper_x.reference()
     magnet.on(True)
@@ -98,6 +98,7 @@ while True:
     stepper_x.run_to()
     magnet.on(False)
     time.sleep(1)
+'''
 
 '''
 stepper_y.move_to(50 + 7 * 1260)
@@ -117,11 +118,11 @@ while True:
     stepper_y.reference() 
 '''
 
-'''
+
 while True:
     print(array.get_position())
     time.sleep(1)
-'''
+
 
 
 
