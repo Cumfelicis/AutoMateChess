@@ -84,7 +84,7 @@ while True:
     magnet.off()
     time.sleep(1)
     stepper_x.reference()
-    magnet.on(False)
+    magnet.on(True)
     time.sleep(1)
     stepper_x.move_to(8800)
     stepper_x.run_to()
@@ -96,7 +96,7 @@ while True:
     time.sleep(1)
     stepper_x.move_to(8800)
     stepper_x.run_to()
-    magnet.on(False)
+    magnet.on(True)
     time.sleep(1)
 
 
