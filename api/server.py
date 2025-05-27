@@ -84,7 +84,7 @@ async def stream_updates(websocket):
             await asyncio.sleep(0.1)
 
 def start_stockfish(config):
-    p = Process(target=run_game_against_stockfish, args=(game_queue, config, command_queue))
+    p = threading.Thread(target=run_game_against_stockfish, args=(game_queue, config, command_queue))
     p.start()
 
 def start_lichess(config):
