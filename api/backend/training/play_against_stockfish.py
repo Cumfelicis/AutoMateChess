@@ -63,7 +63,7 @@ class Play(Module):
         print("test")
         self.button = Button(200, 1000, 100, 100, self.window, "exit")
 
-        # self.loop()
+        self.loop()
 
     def on_start(self, config):
         self.color = config['color']
@@ -73,6 +73,7 @@ class Play(Module):
     
     def on_command(self, command):
         if command == 'check':
+            print("also checking")
             self.game.find_played_move()
 
     def loop(self):
