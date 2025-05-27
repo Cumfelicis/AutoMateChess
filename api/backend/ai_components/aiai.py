@@ -1,5 +1,5 @@
 import tensorflow as tf
-print((tf.__version__))
+print((tf.__file__))
 from tensorflow import keras
 
 from keras.models import model_from_json
