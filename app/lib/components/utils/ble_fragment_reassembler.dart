@@ -5,7 +5,7 @@ import 'package:auto_mate_chess/api_endpoint/communicator.dart';
 class BleMessageReassembler {
   final Map<int, List<int>> _chunks = {};
   int? _expectedChunks;
-  late final _communicator;
+  late final _communicator;N
 
   BleMessageReassembler(Communicator communicator) {
     _communicator = communicator;
