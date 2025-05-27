@@ -42,14 +42,21 @@ STUPID = {
 class Array: 
     def __init__(self, board: Arduino, en_pin):
         self.board = board
-        self.in_pins = [HallSensor(8 + i, board=board) for i in range(4)]
+        self.in_pins = [3, 2, 1, 0]
+        for x, pin in enumerate(self.in_pins):
+            self.in_pins[x] = HallSensor(pin, board=board)
+        
         if en_pin is not None:
             self.en_pin = board.get_pin(f'd:{en_pin}:o')
             # self.en_pins = [board.get_pin(f'd:{en_pin + i}:o') for i in range(4)] 
             # self.en_pin.write(0)
             pass
 
-        self.signal_pins = [[board.get_pin(f'd:{i + 4 *j + 30}:o') for i in range(4)] for j in range(4)]
+        self.signal_pins = [[52, 50, 48, 46], [44, 42, 40, 38], [36, 34, 32, 30], [28, 26, 24, 22]]
+        for x, pins in enumerate(self.signal_pins):
+            for y, pin in enumerate(pins):
+                self.signal_pins[x][y] = self.board.get_pin(f"d:{pin}:o")
+        
         
         
         self.zero_values = self.get_zero_values()
