@@ -94,9 +94,9 @@ def initialize_components():
     time.sleep(1)
 
     ARRAY = Array(BOARD_2, 23)
-    STEPPER_X = Stepper(5, 2, True, board=BOARD_1, board_2=BOARD_2, reference_pin=0, alternative_reference_pin=1)
-    STEPPER_Y = Stepper(6, 3, False, board=BOARD_1, board_2=BOARD_2, reference_pin=2)
-    MAGNET = Magnet(BOARD_2, 2, 3, 4)
+    STEPPER_X = Stepper(5, 2, True, board=BOARD_1, board_2=BOARD_2, reference_pin=7, alternative_reference_pin=6)
+    STEPPER_Y = Stepper(6, 3, False, board=BOARD_1, board_2=BOARD_2, reference_pin=5)
+    MAGNET = Magnet(BOARD_2, 8, 7, 6)
     MAGNET.off()
 
     MULTISTEPPER = Multistepper()
