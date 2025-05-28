@@ -9,6 +9,7 @@ class AnalogReader:
 
     def get_state(self):
         values = [self.pin.read() for _ in range(10)]
+        print(values)
         return sum(values) / len(values) if values else None
 
 
@@ -54,7 +55,6 @@ class Magnet:
         time.sleep(1)
         self.relais_2.write(1)
         print('off')
-        self.relais_3.write(0)
         
     def set_polarity(self, polarity):
         if polarity:
