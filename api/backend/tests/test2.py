@@ -104,9 +104,11 @@ while True:
     magnet.on(True)
     time.sleep(10)
     magnet.off()
+    time.sleep(10)
     magnet.on(False)
     time.sleep(10)
     magnet.off()
+    time.sleep(10)
 
 
 '''
