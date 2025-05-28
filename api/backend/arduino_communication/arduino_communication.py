@@ -162,6 +162,7 @@ class  Stepper:
     def step(self, direction):
         print("step")
         if self.pos > 22500:
+            print("wtf")
             return
         if direction:
             self.dir_pin.write(self.dir_false)
