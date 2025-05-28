@@ -160,6 +160,7 @@ class  Stepper:
         self.step_pin.write(0)
 
     def step(self, direction):
+        print("step")
         if self.pos > 22500:
             return
         if direction:
