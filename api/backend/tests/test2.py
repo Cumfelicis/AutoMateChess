@@ -13,7 +13,7 @@ time.sleep(1)
 
 stepper_x = Stepper(5, 2, True, board=board_1, board_2=board_2, reference_pin=7, alternative_reference_pin=6)
 stepper_y = Stepper(6, 3, False, board=board_1, board_2=board_2, reference_pin=5)
-magnet = Magnet(board_2, 8, 9, 10)
+# magnet = Magnet(board_2, 8, 9, 10)
 multistepper = Multistepper()
 multistepper.add_stepper(stepper_x)
 multistepper.add_stepper(stepper_y)
