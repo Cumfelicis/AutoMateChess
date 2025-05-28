@@ -9,7 +9,6 @@ class AnalogReader:
 
     def get_state(self):
         values = [self.pin.read() for _ in range(10)]
-        print(values)
         return sum(values) / len(values) if values else None
 
 
@@ -81,7 +80,7 @@ class Magnet:
             print(1)
 
 
-class Stepper:
+class  Stepper:
     def __init__(self, dir_pin, step_pin, axis, board, reference_pin, board_2, second_dir_pin=False, alternative_reference_pin=False):
         print(6)
         self.dir_pin = board.get_pin(f"d:{dir_pin}:o")
