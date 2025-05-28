@@ -102,10 +102,10 @@ while True:
 
 while True:
     magnet.on(True)
-    time.sleep(1)
+    time.sleep(10)
     magnet.off()
     magnet.on(False)
-    time.sleep(1)
+    time.sleep(10)
     magnet.off()
 
 
