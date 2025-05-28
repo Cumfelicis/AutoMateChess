@@ -57,6 +57,7 @@ class Magnet:
         
     def set_polarity(self, polarity):
         if polarity:
+            print("push")
             self.relais_1.write(0)
             time.sleep(1)
             self.relais_2.write(1)
@@ -65,13 +66,18 @@ class Magnet:
             time.sleep(1)
             self.relais_1.write(1)
         else:
+            print("pull")
             self.relais_1.write(0)
+            print(1)
             time.sleep(1)
             self.relais_2.write(1)
+            print(2)
             time.sleep(1)
             self.relais_3.write(0)
+            print(3)
             time.sleep(1)
             self.relais_2.write(0)
+            print(1)
 
 
 class Stepper:
