@@ -70,7 +70,7 @@ while True:
 #stepper_x.reference()
 #stepper_y.reference()
 
-'''
+
 while True:
     stepper_x.reference()
     magnet.on(True)
@@ -94,8 +94,8 @@ while True:
     stepper_x.run_to()
     magnet.on(True)
     time.sleep(1)
-'''
 
+'''
 while True:
     magnet.on(False)
     time.sleep(10)
@@ -105,6 +105,7 @@ while True:
     time.sleep(10)
     magnet.off()
     time.sleep(10)
+'''
 
 
 '''
