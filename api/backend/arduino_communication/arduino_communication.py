@@ -54,6 +54,7 @@ class Magnet:
         time.sleep(1)
         self.relais_2.write(1)
         print('off')
+        self.relais_3.write(0)
         
     def set_polarity(self, polarity):
         if polarity:
