@@ -42,6 +42,8 @@ async def handler(websocket):
                 print("starting game")
                 start_stockfish(payload)
                 await websocket.send(json.dumps({"event": "status", "data": "Game Started"}))
+            elif event == 'read':
+                start_read_baord()
             elif event == "start_lichess":
                 print("starting lichess")
                 start_lichess(payload)
@@ -88,7 +90,7 @@ def start_stockfish(config):
     p.start()
 
 def start_lichess(config):
-    p = Process(target=run_online_game, args=(game_queue, config, command_queue))
+    p = threading.Thread(target=run_online_game, args=(game_queue, config, command_queue))
     p.start()
     
 def initialize_components():
@@ -132,6 +134,13 @@ def run_online_game(queue, config, command_queue):
     for move in game.loop():
         queue.put(move)
         
+def read_baord():
+    ARRAY.get_position()
+    
+def start_read_board():
+    t = threading.Thread(target=read_baord)
+    t.start()
+        
 def move_stepper_x(pos):
     STEPPER_X.move_to(pos)
     STEPPER_X.run_to()
@@ -155,27 +164,27 @@ def run_stepper_y():
     STEPPER_Y.run_to()    
     
 def start_move_stepper_x(pos):
-    p = Process(target=move_stepper_x, args=(pos))
+    p = threading.Thread(target=move_stepper_x, args=(pos))
     p.start
     
 def start_run_stepper_x():
-    p = Process(target=run_stepper_x)
+    p = threading.Thread(target=run_stepper_x)
     p.start  
     
 def start_move_stepper_y(pos):
-    p = Process(target=move_stepper_y, args=(pos))
+    p = threading.Thread(target=move_stepper_y, args=(pos))
     p.start
     
 def start_run_stepper_y():
-    p = Process(target=run_stepper_y)
+    p = threading.Thread(target=run_stepper_y)
     p.start
         
 def start_move_multistepper(pos_x, pos_y):
-    p = Process(target=move_multistepper, args=(pos_x, pos_y))
+    p = threading.Thread(target=move_multistepper, args=(pos_x, pos_y))
     p.start()
     
 def start_run_multistepper():
-    p = Process(target=run_multistepper)
+    p = threading.Thread(target=run_multistepper)
     p.start()
         
   
@@ -184,7 +193,7 @@ def calibrate_array():
     ARRAY.calibrate()
     
 def start_calibrate_array():
-    p = Process(target=calibrate_array)
+    p = threading.Thread(target=calibrate_array)
     p.start
 
 def start_websocket_server():

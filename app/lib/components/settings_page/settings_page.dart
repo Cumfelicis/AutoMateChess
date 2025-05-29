@@ -38,6 +38,10 @@ class _SettingsPageState extends State<SettingsPage> {
     _communicator.calibrateArray();
   }
 
+  void _read() {
+    _communicator.readBoard();
+  }
+
   @override
   Widget build(BuildContext context) {
     final xFilled = _xController.text.isNotEmpty;
@@ -94,6 +98,14 @@ class _SettingsPageState extends State<SettingsPage> {
               onPressed: _calibrate,
               icon: const Icon(Icons.build),
               label: const Text("Calibrate"),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: _read,
+              icon: const Icon(Icons.build),
+              label: const Text("Read Board"),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
               ),

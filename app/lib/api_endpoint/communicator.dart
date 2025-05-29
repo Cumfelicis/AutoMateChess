@@ -50,6 +50,10 @@ class Communicator {
     emit("move_stepper_x", pos);
   }
 
+  void readBoard() {
+    emit("read", null);
+  }
+
   void moveStepperY(pos) {
     emit("move_stepper_y", pos);
   }
