@@ -14,7 +14,7 @@ time.sleep(1)
 en_pin = board_1.get_pin(f"d:8:o")
 en_pin.write(0)
 
-stepper_y = Stepper(39, 3, True, board=board_1, board_2=board_2, reference_pin=7, alternative_reference_pin=6)
+stepper_y = Stepper(7, 4, True, board=board_1, board_2=board_2, reference_pin=7, alternative_reference_pin=6)
 stepper_x = Stepper(5, 2, False, board=board_1, board_2=board_2, reference_pin=5)
 magnet = Magnet(board_2, 8, 9, 10)
 magnet.off()
