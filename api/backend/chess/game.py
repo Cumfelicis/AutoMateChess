@@ -628,7 +628,7 @@ class Board:
     def find_storage_pos(self, piece):
         try:  # TODO: rewrite so there is no try/catch
             storage_pos = piece_to_storage(piece)
-            if piece in self.white_pieces:
+            if piece not in self.white_pieces:
                 while not self.white_storage[storage_pos[0]][storage_pos[1]] == 0:
                     if storage_pos[1] == 1:
                         storage_pos[1] = 0
