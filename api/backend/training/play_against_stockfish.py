@@ -82,9 +82,7 @@ class Play(Module):
         self.game.setup_board(self.fen)
         last_move = self.game.get_last_move()
         run = True
-        self.array.calibrate()
         print('stockfish')
-        self.array.get_position()
         while run:
             clock.tick(30)
             self.window.fill((176, 196, 222))
