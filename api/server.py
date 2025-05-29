@@ -99,14 +99,16 @@ def initialize_components():
     time.sleep(1)
 
     ARRAY = Array(BOARD_2, 23)
-    STEPPER_X = Stepper(5, 2, True, board=BOARD_1, board_2=BOARD_2, reference_pin=7, alternative_reference_pin=6)
-    STEPPER_Y = Stepper(6, 3, False, board=BOARD_1, board_2=BOARD_2, reference_pin=5)
+    STEPPER_X = Stepper(7, 4, True, board=BOARD_1, board_2=BOARD_2, reference_pin=7, alternative_reference_pin=6)
+    STEPPER_Y = Stepper(5, 2, False, board=BOARD_1, board_2=BOARD_2, reference_pin=5)
     MAGNET = Magnet(BOARD_2, 8, 9, 10)
     MAGNET.off()
 
     MULTISTEPPER = Multistepper()
     MULTISTEPPER.add_stepper(STEPPER_X)
     MULTISTEPPER.add_stepper(STEPPER_Y)
+    STEPPER_X.reference()
+    STEPPER_Y.reference()
     return BOARD_1, BOARD_2, STEPPER_X, STEPPER_Y, MULTISTEPPER, ARRAY, MAGNET
 
 def run_game_against_stockfish(queue, config, command_queue):
