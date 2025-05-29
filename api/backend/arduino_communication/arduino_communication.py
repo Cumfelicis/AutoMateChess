@@ -56,7 +56,7 @@ class Magnet:
         print('off')
         
     def set_polarity(self, polarity):
-        if polarity:
+        if not polarity:
             print("push")
             self.relais_1.write(0)
             time.sleep(1)
