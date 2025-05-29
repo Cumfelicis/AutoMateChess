@@ -83,7 +83,7 @@ class Magnet:
 class  Stepper:
     def __init__(self, dir_pin, step_pin, axis, board, reference_pin, board_2, second_dir_pin=False, alternative_reference_pin=False):
         print(6)
-        if not axis:
+        if axis:
             self.dir_pin = board_2.get_pin(f"d:{dir_pin}:o")
         else:
             self.dir_pin = board.get_pin(f"d:{dir_pin}:o")
