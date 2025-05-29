@@ -28,7 +28,7 @@ class Communicator {
     on['status'] = (data) {
       print('data: $data');
     };
-    on['move'] = (data) => onMove(data);
+    on['move'] = (data) => onMove(jsonDecode(data));
     on['challenges'] = (_challenges) {
       challenges = _challenges;
     };
