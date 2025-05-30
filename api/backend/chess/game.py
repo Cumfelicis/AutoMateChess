@@ -626,6 +626,7 @@ class Board:
             self.play_move_on_board(self.find_extraction_pos(i[0]), i[1])
 
     def find_storage_pos(self, piece):
+        return [0, 8]
         try:  # TODO: rewrite so there is no try/catch
             storage_pos = piece_to_storage(piece)
             if piece not in self.white_pieces:
