@@ -43,7 +43,7 @@ async def handler(websocket):
                 start_stockfish(payload)
                 await websocket.send(json.dumps({"event": "status", "data": "Game Started"}))
             elif event == 'read':
-                start_read_baord()
+                start_read_board()
             elif event == "start_lichess":
                 print("starting lichess")
                 start_lichess(payload)
