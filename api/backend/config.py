@@ -3,5 +3,5 @@ config = {
     'STEPS_PER_SQUARE': 125,
     'STEPPER_STARTING_POS': [250, 200],
     'BOARD_SQUARE_SIZE': 1260,
-    'TOLERANCE': 0.005
+    'TOLERANCE': 0.008
 }
