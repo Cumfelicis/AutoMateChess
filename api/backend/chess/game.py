@@ -420,7 +420,7 @@ class Board:
     def play_move_on_board(self, piece_square, target_square, captured=No(0, 0, 0, 0, 0, 0), castled=False,
                            real_move=True, capture=False):
         piece_to_move = copy.copy(self.squares[piece_square[0]][piece_square[1]])
-        piece_to_capture = copy.copy(self.squares[target_square[0]][target_square[1]])
+        # piece_to_capture = copy.copy(self.squares[target_square[0]][target_square[1]])
         if not captured.name == "!":
             self.move_to_square(captured.pos)
             self.remove_piece([captured.name, target_square])
