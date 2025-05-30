@@ -445,7 +445,7 @@ class Board:
                     if target_square[0] > piece_square[0]: # nach unten
                         if abs(target_square[1] - piece_square[1]) == 1: #nach rechts unten
                             self.stepper_x.move(self.between_squares)
-                            self.stepper_y.move(ptrb.get_pos(target_square[0], False))
+                            self.stepper_y.move_to(ptrb.get_pos(target_square[0], False))
                             self.multistepper.run_to()
                             self.stepper_x.move_to(ptrb.get_pos(target_square[1], True))
                             self.stepper_x.run_to()
@@ -458,7 +458,7 @@ class Board:
                     else: # nach oben
                         if abs(target_square[1] - piece_square[1]) == 1: #nach rechts oben
                             self.stepper_x.move(self.between_squares)
-                            self.stepper_y.move(ptrb.get_pos(target_square[0], False))
+                            self.stepper_y.move_to(ptrb.get_pos(target_square[0], False))
                             self.multistepper.run_to()
                             self.stepper_x.move_to(ptrb.get_pos(target_square[1], True))
                             self.stepper_x.run_to()
@@ -472,7 +472,7 @@ class Board:
                     if target_square[0] > piece_square[0]: # nach unten
                         if abs(target_square[1] - piece_square[1]) == 1: #nach links unten
                             self.stepper_x.move(-self.between_squares)
-                            self.stepper_y.move(ptrb.get_pos(target_square[0], False))
+                            self.stepper_y.move_to(ptrb.get_pos(target_square[0], False))
                             self.multistepper.run_to()
                             self.stepper_x.move_to(ptrb.get_pos(target_square[1], True))
                             self.stepper_x.run_to()
@@ -485,7 +485,7 @@ class Board:
                     else: # nach oben
                         if abs(target_square[1] - piece_square[1]) == 1: # nach links oben
                             self.stepper_x.move(-self.between_squares)
-                            self.stepper_y.move(ptrb.get_pos(target_square[0], False))
+                            self.stepper_y.move_to(ptrb.get_pos(target_square[0], False))
                             self.multistepper.run_to()
                             self.stepper_x.move_to(ptrb.get_pos(target_square[1], True))
                             self.stepper_x.run_to()
